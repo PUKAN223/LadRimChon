@@ -43,7 +43,7 @@ export function OrderReadyBanner() {
             playOrderReadySound()
             await sendSystemNotification({
               title: '🍲 อาหารพร้อมรับแล้ว!',
-              body: `ร้าน ${ready.shopName} · รหัสรับ #${ready.pickupCode || ready.orderNumber} (แตะเพื่อเปิดรหัสรับอาหาร)`,
+              body: `ร้าน ${ready.shopName} (แตะเพื่อเปิดรหัสรับอาหาร)`,
               url: `/orders/${ready.id}/pickup`,
               tag: `order-ready-${ready.id}`,
             })

@@ -49,12 +49,17 @@ export async function sendSystemNotification({
     vibrate: [200, 100, 200],
   };
 
-  // 1. Try ServiceWorker showNotification (PWA standard for background & mobile lockscreen)
+  // 1. Try ServiceWorker showNotification if registration is already active
   if ("serviceWorker" in navigator) {
     try {
-      const registration = await navigator.serviceWorker.ready;
-      if (registration && "showNotification" in registration) {
-        await registration.showNotification(title, options);
+      const reg = await Promise.race([
+        navigator.serviceWorker.getRegistration(),
+        new Promise<undefined>((resolve) =>
+          setTimeout(() => resolve(undefined), 300)
+        ),
+      ]);
+      if (reg && "showNotification" in reg) {
+        await reg.showNotification(title, options);
         return;
       }
     } catch {

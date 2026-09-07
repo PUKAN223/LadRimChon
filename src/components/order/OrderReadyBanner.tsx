@@ -18,15 +18,17 @@ export function OrderReadyBanner() {
   const user = useAppSelector((s) => s.session.user)
 
   useEffect(() => {
+    let scheduledTimers: NodeJS.Timeout[] = []
+
     const checkOrders = async () => {
       try {
         const orderRepo = getOrderRepository()
         const orders = await orderRepo.getOrders(user?.id || 'user-demo').catch(() => [])
 
         // Find orders that are 'ready'
-        const ready = orders.find((o: Order) => o.status === 'ready')
+        const readyOrders = orders.filter((o: Order) => o.status === 'ready')
 
-        if (ready) {
+        for (const ready of readyOrders) {
           // Check if already notified
           let notifiedIds: string[] = []
           try {
@@ -39,7 +41,7 @@ export function OrderReadyBanner() {
           if (!notifiedIds.includes(ready.id)) {
             // New ready order! Play sound & trigger real OS Push Notification
             playOrderReadySound()
-            sendSystemNotification({
+            await sendSystemNotification({
               title: '🍲 อาหารพร้อมรับแล้ว!',
               body: `ร้าน ${ready.shopName} · รหัสรับ #${ready.pickupCode || ready.orderNumber} (แตะเพื่อเปิดรหัสรับอาหาร)`,
               url: `/orders/${ready.id}/pickup`,
@@ -53,15 +55,39 @@ export function OrderReadyBanner() {
             }
           }
         }
+
+        // Schedule precise timer for pending orders to prevent background tab throttling
+        const pendingOrders = orders.filter((o: Order) => o.status === 'pending')
+        scheduledTimers.forEach(clearTimeout)
+        scheduledTimers = []
+
+        pendingOrders.forEach((p) => {
+          const readyAt = new Date(p.createdAt).getTime() + 5000
+          const delay = Math.max(100, readyAt - Date.now())
+          const t = setTimeout(() => {
+            void checkOrders()
+          }, delay + 100)
+          scheduledTimers.push(t)
+        })
       } catch {
         // ignore errors
       }
     }
 
-    // Check immediately and every 3 seconds for demo / live responsiveness
-    checkOrders()
+    // Check immediately and periodically
+    void checkOrders()
     const interval = setInterval(checkOrders, 3000)
-    return () => clearInterval(interval)
+
+    const handleFocus = () => { void checkOrders() }
+    document.addEventListener('visibilitychange', handleFocus)
+    window.addEventListener('focus', handleFocus)
+
+    return () => {
+      clearInterval(interval)
+      scheduledTimers.forEach(clearTimeout)
+      document.removeEventListener('visibilitychange', handleFocus)
+      window.removeEventListener('focus', handleFocus)
+    }
   }, [user?.id])
 
   // Headless: No redundant floating in-app banner UI

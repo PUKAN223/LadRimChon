@@ -36,7 +36,7 @@ export function ImageWithSkeleton({
         ref={markCachedImageAsLoaded}
         src={currentSrc}
         alt={alt}
-        className={`relative z-10 h-full w-full transition-opacity duration-200 ${className ?? ''}`}
+        className={`relative z-0 h-full w-full transition-opacity duration-200 ${className ?? ''}`}
         style={isLoaded ? style : { ...style, opacity: 0 }}
         onLoad={(event) => {
           setImageState({ source: src, currentSrc, isLoaded: true })

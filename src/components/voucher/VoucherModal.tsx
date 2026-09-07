@@ -1,6 +1,7 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { X, Ticket, Sparkles, Check, CheckCircle2, AlertCircle, ArrowRight } from 'lucide-react'
 import { useAppDispatch, useAppSelector } from '@/lib/hooks'
 import {
@@ -32,11 +33,24 @@ export function VoucherModal({
   const activeVouchers = useAppSelector(selectActiveUserVouchers)
   const selectedVoucherId = useAppSelector((state) => state.voucher.selectedVoucherId)
 
+  const [mounted, setMounted] = useState(false)
   const [activeTab, setActiveTab] = useState<'my-vouchers' | 'exchange'>(initialTab)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
-  if (!isOpen) return null
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  useEffect(() => {
+    if (isOpen) {
+      setActiveTab(initialTab)
+      setSuccessMessage(null)
+      setErrorMessage(null)
+    }
+  }, [isOpen, initialTab])
+
+  if (!isOpen || !mounted) return null
 
   const userPoints = user?.points ?? 0
 
@@ -75,9 +89,9 @@ export function VoucherModal({
     }
   }
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 z-[70] flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-xs animate-modal-backdrop"
+      className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-xs animate-modal-backdrop"
       role="presentation"
       onClick={onClose}
     >
@@ -85,7 +99,7 @@ export function VoucherModal({
         role="dialog"
         aria-modal="true"
         aria-labelledby="voucher-modal-title"
-        className="w-full max-w-[430px] max-h-[85vh] flex flex-col bg-[#F7F3E8] rounded-t-[28px] sm:rounded-[28px] shadow-2xl overflow-hidden animate-bottom-sheet"
+        className="w-full max-w-[430px] max-h-[85vh] flex flex-col bg-[#F7F3E8] rounded-t-[28px] sm:rounded-[28px] shadow-2xl overflow-hidden animate-bottom-sheet pb-[max(1rem,env(safe-area-inset-bottom))]"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -334,7 +348,8 @@ export function VoucherModal({
           </div>
         )}
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
 

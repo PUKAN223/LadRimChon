@@ -38,21 +38,6 @@ export function ShopCard({
   if (variant === 'featured' || variant === 'stall') {
     return (
       <div className="relative bg-white rounded-[24px] overflow-hidden shadow-warm-xs border border-[#E9D7B5]/60 transition-all duration-200 hover:shadow-warm-sm">
-        {/* Top Floating Badges & Actions */}
-        <div className="absolute top-3 right-3 z-10 flex items-center gap-1.5">
-          {shop.isOpen ? (
-            <span className="bg-emerald-500/90 backdrop-blur-md text-white text-[11px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1 shadow-xs">
-              <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-              เปิดอยู่
-            </span>
-          ) : (
-            <span className="bg-black/60 backdrop-blur-md text-white text-[11px] font-bold px-2.5 py-1 rounded-full">
-              ปิด
-            </span>
-          )}
-          <FavoriteButton type="shop" id={shop.id} name={shop.name} variant="floating" size={16} />
-        </div>
-
         {/* Storefront / Stall Photo Header */}
         <Link href={`/shops/${shop.id}`} className="block relative group active:scale-[0.985] transition-transform duration-150">
           <div className="h-44 sm:h-48 bg-gray-100 relative overflow-hidden">
@@ -65,15 +50,15 @@ export function ShopCard({
             />
 
             {/* Top Stall Badges */}
-            <div className="absolute top-3 left-3 flex items-center gap-1.5">
-              <span className="bg-[#2E2318]/85 backdrop-blur-md text-white text-[11px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1 shadow-xs">
+            <div className="absolute top-3 left-3 flex items-center gap-1.5 z-10">
+              <span className="bg-[#2E2318]/85 backdrop-blur-md text-white text-[11px] font-bold px-2.5 py-1 rounded-full flex items-center gap-0.5 shadow-xs">
                 <Store size={14} strokeWidth={2.4} className="text-market-orange" />
                 {shop.zone}
               </span>
             </div>
 
             {/* Bottom Gradient overlay with shop title */}
-            <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-[#2E2318]/85 to-transparent flex items-end p-3.5">
+            <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-[#2E2318]/85 to-transparent flex items-end p-3.5 z-10">
               <div className="flex-1 min-w-0">
                 <h3 className="font-bold text-white text-[18px] leading-tight drop-shadow-sm truncate">
                   {shop.name}
@@ -82,6 +67,21 @@ export function ShopCard({
             </div>
           </div>
         </Link>
+
+        {/* Top Floating Badges & Actions - Rendered AFTER Link with z-30 so it is never hidden behind card */}
+        <div className="absolute top-3 right-3 z-30 flex items-center gap-1.5 pointer-events-auto">
+          {shop.isOpen ? (
+            <span className="bg-emerald-500/90 backdrop-blur-md text-white text-[11px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1 shadow-xs">
+              <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+              เปิดอยู่
+            </span>
+          ) : (
+            <span className="bg-black/60 backdrop-blur-md text-white text-[11px] font-bold px-2.5 py-1 rounded-full">
+              ปิด
+            </span>
+          )}
+          <FavoriteButton type="shop" id={shop.id} name={shop.name} variant="floating" size={16} />
+        </div>
 
         {/* Stall Meta Bar */}
         <div className="px-4 py-2.5 bg-[#FAF7F0] border-b border-[#E9D7B5]/40 flex items-center justify-between text-xs">

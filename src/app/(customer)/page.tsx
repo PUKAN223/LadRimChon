@@ -1,6 +1,6 @@
 'use client'
 
-import { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { Search, ChevronRight, X, Flame, Store, Star, Plus, Clock, SlidersHorizontal } from 'lucide-react'
 import Link from 'next/link'
@@ -43,8 +43,8 @@ export default function HomePage() {
   const [activeOrder, setActiveOrder] = useState<Order | null>(null)
   const [loading, setLoading] = useState(false)
   const [showFilterModal, setShowFilterModal] = useState(false)
+  const [isFilterClosing, setIsFilterClosing] = useState(false)
   const [isSticky, setIsSticky] = useState(false)
-  const filterDialog = useRef<HTMLDialogElement>(null)
   const [stallsScrollProgress, setStallsScrollProgress] = useState(0)
   const [sheetDragY, setSheetDragY] = useState(0)
   const [sheetStartY, setSheetStartY] = useState<number | null>(null)
@@ -52,6 +52,22 @@ export default function HomePage() {
   const [recentSearches, setRecentSearches] = useState<string[]>([])
   const [showRecentSearches, setShowRecentSearches] = useState(false)
   const [draftSearch, setDraftSearch] = useState(searchQuery)
+
+  const openFilterModal = () => {
+    setIsFilterClosing(false)
+    setSheetDragY(0)
+    setShowFilterModal(true)
+  }
+
+  const closeFilterModal = useCallback(() => {
+    if (isFilterClosing) return
+    setIsFilterClosing(true)
+    setTimeout(() => {
+      setShowFilterModal(false)
+      setIsFilterClosing(false)
+      setSheetDragY(0)
+    }, 220)
+  }, [isFilterClosing])
 
   const stickySentinelRef = useRef<HTMLDivElement>(null)
   const stallsRef = useRef<HTMLDivElement>(null)
@@ -85,21 +101,28 @@ export default function HomePage() {
 
   const handleSheetTouchEnd = () => {
     if (sheetDragY > 75) {
-      setShowFilterModal(false)
+      closeFilterModal()
+    } else {
+      setSheetDragY(0)
     }
-    setSheetDragY(0)
     setSheetStartY(null)
     setIsDraggingSheet(false)
   }
 
   useEffect(() => {
     if (!showFilterModal) return
-    const node = filterDialog.current
-    const overflow = document.body.style.overflow
-    node?.showModal()
+    const prevOverflow = document.body.style.overflow
     document.body.style.overflow = 'hidden'
-    return () => { node?.close(); document.body.style.overflow = overflow }
-  }, [showFilterModal])
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') closeFilterModal()
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => {
+      document.body.style.overflow = prevOverflow
+      window.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [showFilterModal, closeFilterModal])
 
   useEffect(() => {
     const handleScroll = () => {
@@ -379,7 +402,7 @@ export default function HomePage() {
           {/* Filter Button beside input - Only shows when in sticky state */}
           {isSticky && (
             <button
-              onClick={() => setShowFilterModal(true)}
+              onClick={openFilterModal}
               id="filter-toggle-button"
               className={`relative flex items-center justify-center w-12 h-12 rounded-2xl border-2 transition-all active:scale-95 shrink-0 shadow-warm-xs animate-slide-up ${selectedCategory
                 ? 'bg-market-brown text-white shadow-sm'
@@ -569,9 +592,6 @@ export default function HomePage() {
                         key={shop.id}
                         className="relative w-54 sm:w-58 shrink-0 bg-white rounded-2xl overflow-hidden border border-market-beige/60 shadow-warm-xs hover:shadow-warm-sm active:scale-[0.97] transition-all group block"
                       >
-                        <div className="absolute top-2 right-2 z-10">
-                          <FavoriteButton type="shop" id={shop.id} name={shop.name} variant="floating" size={15} />
-                        </div>
                         <Link
                           href={`/shops/${shop.id}`}
                           className="block"
@@ -586,33 +606,29 @@ export default function HomePage() {
                                 target.src = '/images/stalls/krapal.webp'
                               }}
                             />
-                            <div className="absolute top-2 left-2">
-                              <span className="bg-market-dark/85 backdrop-blur-md text-white text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-0.5 shadow-xs">
-                                <Store size={12} strokeWidth={2.6} className="text-market-orange" />
-                                ร้านที่ {shop.shopNumber}
-                              </span>
-                            </div>
-                            <div className="absolute bottom-2 left-2">
-                              <span className="bg-market-dark/85 backdrop-blur-md text-amber-400 text-[10px] font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5 shadow-xs">
-                                <Star size={12} strokeWidth={2.4} className="fill-amber-400 text-amber-400" />
-                                {shop.rating}
-                              </span>
-                            </div>
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60" />
+                            <span className="absolute bottom-2 left-2.5 text-[10px] font-bold text-white bg-black/40 backdrop-blur-xs px-2 py-0.5 rounded-full border border-white/20">
+                              ร้านที่ {shop.shopNumber}
+                            </span>
                           </div>
-
-                          <div className="p-2.5">
-                            <h3 className="font-bold text-market-dark text-[13px] truncate group-hover:text-market-brown transition-colors">
+                          <div className="p-3">
+                            <h4 className="font-bold text-market-dark text-[14px] truncate group-hover:text-market-brown transition-colors">
                               {shop.name}
-                            </h3>
-                            <div className="flex items-center gap-1.5 text-[11px] text-market-muted mt-1 font-medium">
-                              <span className="flex items-center gap-0.5">
-                                <Clock size={13} strokeWidth={2.4} /> {shop.preparationTime} นาที
+                            </h4>
+                            <div className="flex items-center gap-2 mt-1">
+                              <span className="flex items-center gap-0.5 text-[11px] font-bold text-market-orange">
+                                <Star size={11} fill="currentColor" /> {shop.rating}
                               </span>
-                              <span>•</span>
-                              <span className="truncate">{shop.tags[0] || 'อาหารจานเดียว'}</span>
+                              <span className="text-market-beige text-[10px]">•</span>
+                              <span className="text-[11px] text-market-muted truncate">
+                                {shop.zone}
+                              </span>
                             </div>
                           </div>
                         </Link>
+                        <div className="absolute top-2 right-2 z-30 pointer-events-auto">
+                          <FavoriteButton type="shop" id={shop.id} name={shop.name} variant="floating" size={15} />
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -673,9 +689,6 @@ export default function HomePage() {
                         key={product.id}
                         className="relative bg-white rounded-2xl p-2.5 border border-market-beige/60 shadow-warm-xs hover:shadow-warm-sm transition-all group flex flex-col justify-between"
                       >
-                        <div className="absolute top-3.5 right-3.5 z-10">
-                          <FavoriteButton type="product" id={product.id} name={product.name} variant="floating" size={14} />
-                        </div>
                         <Link href={`/menu/${product.id}`} className="block">
                           <div className="w-full aspect-square rounded-xl bg-gray-100 overflow-hidden relative shadow-2xs">
                             <img
@@ -698,6 +711,9 @@ export default function HomePage() {
                             </p>
                           )}
                         </Link>
+                        <div className="absolute top-3.5 right-3.5 z-30 pointer-events-auto">
+                          <FavoriteButton type="product" id={product.id} name={product.name} variant="floating" size={14} />
+                        </div>
 
                         <div className="flex items-center justify-between mt-2 pt-1.5 border-t border-[#FAF7F0]">
                           <span className="font-black text-market-brown text-[14px]">
@@ -728,14 +744,33 @@ export default function HomePage() {
 
       {/* ── FILTER BOTTOM SHEET MODAL (Rendered via Portal to sit above navbar & floating elements) ── */}
       {showFilterModal && createPortal(
-        <dialog ref={filterDialog} className="filter-dialog" aria-labelledby="filter-title" onCancel={() => setShowFilterModal(false)}>
-
+        <div
+          className={`fixed inset-0 z-[100] flex items-end justify-center bg-black/60 backdrop-blur-xs ${
+            isFilterClosing ? 'animate-modal-backdrop-out' : 'animate-modal-backdrop'
+          }`}
+          role="presentation"
+          onClick={closeFilterModal}
+        >
           {/* Sheet with Touch Drag-Down to Dismiss */}
           <div
-            className="relative w-full max-w-107.5 bg-white rounded-t-3xl border-t border-market-beige/80 shadow-[0_-8px_30px_rgba(0,0,0,0.25)] p-5 z-10 pb-[max(2.25rem,calc(env(safe-area-inset-bottom,0px)+1.5rem))]"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="filter-title"
+            onClick={(e) => e.stopPropagation()}
+            className={`relative w-full max-w-[430px] bg-white rounded-t-[28px] border-t border-market-beige/80 shadow-[0_-8px_30px_rgba(0,0,0,0.25)] p-5 z-10 pb-[max(2.25rem,calc(env(safe-area-inset-bottom,0px)+1.5rem))] ${
+              isFilterClosing
+                ? 'animate-bottom-sheet-out'
+                : sheetDragY === 0
+                  ? 'animate-bottom-sheet'
+                  : ''
+            }`}
             style={{
-              transform: `translateY(${sheetDragY}px)`,
-              transition: isDraggingSheet ? 'none' : 'transform 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
+              transform: isFilterClosing
+                ? undefined
+                : sheetDragY > 0
+                  ? `translateY(${sheetDragY}px)`
+                  : undefined,
+              transition: isDraggingSheet ? 'none' : 'transform 0.22s cubic-bezier(0.16, 1, 0.3, 1)',
             }}
           >
             {/* Tactile Handle bar (Touch Drag Area) */}
@@ -755,7 +790,7 @@ export default function HomePage() {
                 <h3 id="filter-title" className="font-bold text-market-dark text-base">ตัวกรองหมวดหมู่</h3>
               </div>
               <button
-                onClick={() => setShowFilterModal(false)}
+                onClick={closeFilterModal}
                 aria-label="ปิดตัวกรอง"
                 className="w-11 h-11 rounded-full bg-[#FAF7F0] hover:bg-[#F0ECE1] flex items-center justify-center text-[#4A382A] transition-colors active:scale-90"
               >
@@ -770,7 +805,7 @@ export default function HomePage() {
                 <button
                   onClick={() => {
                     dispatch(setSelectedCategory(null))
-                    setShowFilterModal(false)
+                    closeFilterModal()
                   }}
                   className={`flex items-center gap-2.5 p-3 rounded-2xl border text-left transition-all ${selectedCategory === null
                     ? 'bg-market-dark text-white border-market-dark font-bold shadow-warm-xs'
@@ -787,7 +822,7 @@ export default function HomePage() {
                       key={cat.id}
                       onClick={() => {
                         dispatch(setSelectedCategory(isActive ? null : cat.id))
-                        setShowFilterModal(false)
+                        closeFilterModal()
                       }}
                       className={`flex items-center gap-2.5 p-3 rounded-2xl border text-left transition-all ${isActive
                         ? 'bg-market-brown text-white border-market-brown font-bold shadow-warm-xs'
@@ -808,7 +843,7 @@ export default function HomePage() {
                 <button
                   onClick={() => {
                     dispatch(setSelectedCategory(null))
-                    setShowFilterModal(false)
+                    closeFilterModal()
                   }}
                   className="flex-1 py-3.5 rounded-2xl border border-market-beige text-market-muted hover:text-market-dark text-xs font-semibold hover:bg-[#FAF7F0] transition-colors"
                 >
@@ -816,14 +851,14 @@ export default function HomePage() {
                 </button>
               )}
               <button
-                onClick={() => setShowFilterModal(false)}
+                onClick={closeFilterModal}
                 className="flex-1 py-3.5 rounded-2xl bg-market-orange text-white text-xs font-bold hover:bg-[#E8894E] shadow-warm-xs transition-colors text-center active:scale-95"
               >
                 ดูผลลัพธ์
               </button>
             </div>
           </div>
-        </dialog>,
+        </div>,
         document.body
       )}
     </div>

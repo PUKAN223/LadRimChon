@@ -200,9 +200,6 @@ export function ShopCard({
 
   return (
     <div className="relative rounded-3xl overflow-hidden bg-white shadow-warm-xs border border-gray-100 hover:shadow-warm-sm transition-all duration-300 group">
-      <div className="absolute top-2.5 right-2.5 z-10">
-        <FavoriteButton type="shop" id={shop.id} name={shop.name} variant="floating" size={16} />
-      </div>
       <Link href={`/shops/${shop.id}`} className={`block active:scale-[0.985] transition-transform duration-150 ${!shop.isOpen ? 'opacity-70 grayscale-[30%]' : ''}`}>
         {/* Cover */}
         <div className="h-[135px] bg-gray-100 relative overflow-hidden">
@@ -239,6 +236,9 @@ export function ShopCard({
           </div>
         </div>
       </Link>
+      <div className="absolute top-2.5 right-2.5 z-30 pointer-events-auto">
+        <FavoriteButton type="shop" id={shop.id} name={shop.name} variant="floating" size={16} />
+      </div>
     </div>
   )
 }

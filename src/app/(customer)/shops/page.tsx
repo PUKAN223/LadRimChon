@@ -185,7 +185,8 @@ export default function ShopsPage() {
             >
               <ShopCard
                 shop={shop}
-                variant="default"
+                variant="stall"
+                previewProducts={shopProducts[shop.id]}
                 onAddToCart={handleAddToCart}
               />
             </div>

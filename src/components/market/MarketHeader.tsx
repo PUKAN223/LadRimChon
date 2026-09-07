@@ -34,6 +34,7 @@ export function MarketHeader({
         {showBack ? (
           <Link
             href={backHref}
+            data-navigation-direction="back"
             aria-label="ย้อนกลับ"
             className="flex items-center justify-center w-11 h-11 rounded-full bg-white border border-[#E9D7B5]/70 shadow-xs hover:bg-[#FAF7F0] active:scale-95 transition-all text-[#2E2318]"
           >

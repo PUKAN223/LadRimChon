@@ -134,6 +134,7 @@ export default function MenuDetailPage() {
         <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-background to-transparent" />
         <Link
           href={`/shops/${product.shopId}`}
+          data-navigation-direction="back"
           aria-label="กลับไปร้านค้า"
           className="absolute top-[max(1rem,env(safe-area-inset-top,0px))] left-4 w-11 h-11 rounded-full bg-white/95 backdrop-blur-md border border-white/80 text-market-dark shadow-warm flex items-center justify-center active:scale-95 transition-transform"
         >

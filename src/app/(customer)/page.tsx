@@ -285,11 +285,6 @@ export default function HomePage() {
         )}
       </div>
 
-      {/* ── SWIPEABLE HERO PROMO CAROUSEL (ปัดซ้าย-ปัดขวา ก่อน Search Bar) ── */}
-      <div className="px-5">
-        <PromoCarousel />
-      </div>
-
       {/* Sentinel element right before sticky search to detect when it sticks to top */}
       <div ref={stickySentinelRef} className="h-0 w-full pointer-events-none" />
 
@@ -369,6 +364,11 @@ export default function HomePage() {
             </span>
           </div>
         )}
+      </div>
+
+      {/* ── SWIPEABLE HERO PROMO CAROUSEL (ปัดซ้าย-ปัดขวา ใต้ Search Bar) ── */}
+      <div className="px-5 pt-1">
+        <PromoCarousel />
       </div>
 
       {/* ── CATEGORIES (4 Items on Warm Cream Background) ──────────────── */}

@@ -7,8 +7,8 @@ import { Product } from '@/domain/product/product.model'
 import { getShopRepository, getProductRepository } from '@/lib/repositories'
 import { SEED_SHOPS, SEED_PRODUCTS } from '@/repositories/adapters/local-storage/seed.data'
 import { FoodCard } from '@/components/food/FoodCard'
-import { MarketHeader } from '@/components/market/MarketHeader'
-import { Star, Clock, MapPin, SearchX, UtensilsCrossed } from 'lucide-react'
+import { DetailHero } from '@/components/market/DetailHero'
+import { Star, Clock, MapPin, SearchX, UtensilsCrossed, ChevronLeft } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 
@@ -59,10 +59,17 @@ export default function ShopDetailPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-[#F7F3E8]">
-        <MarketHeader showBack backHref="/" title="กำลังโหลด..." />
+        <div className="sticky top-0 z-30 w-full h-[env(safe-area-inset-top,0px)] bg-[#F7F3E8]" />
+        <div className="relative">
+          <div className="detail-hero skeleton-shimmer" />
+          <nav aria-label="การนำทาง" className="detail-hero-actions">
+            <Link href="/shops" aria-label="ย้อนกลับ" className="detail-float-button">
+              <ChevronLeft size={22} strokeWidth={2} />
+            </Link>
+          </nav>
+        </div>
         <div className="space-y-4">
-          <div className="h-48 skeleton-shimmer" />
-          <div className="p-4 space-y-3">
+          <div className="detail-surface space-y-3">
             <div className="h-6 w-1/2 rounded-md skeleton-shimmer" />
             <div className="h-4 w-3/4 rounded-md skeleton-shimmer" />
             <div className="grid grid-cols-2 gap-3 pt-4">
@@ -94,31 +101,10 @@ export default function ShopDetailPage() {
 
   return (
     <div className="animate-fade-in">
-      <MarketHeader showBack backHref="/" title={shop.name} />
-
-
-      {/* Cover */}
-      <div className="relative h-48 bg-gray-100 overflow-hidden">
-        <img
-          src={shop.coverUrl || shop.imageUrl || '/images/food/default.jpg'}
-          alt={shop.name}
-          className="w-full h-full object-cover"
-          onError={(e) => {
-            const target = e.target as HTMLImageElement
-            target.src = '/images/food/default.jpg'
-          }}
-        />
-        {!shop.isOpen && (
-          <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-            <span className="bg-white/90 text-gray-900 font-bold px-4 py-1.5 rounded-full text-sm">
-              ปิดให้บริการ
-            </span>
-          </div>
-        )}
-      </div>
+      <DetailHero src={shop.coverUrl || shop.imageUrl || '/images/food/default.jpg'} alt={shop.name} backHref="/shops" closed={!shop.isOpen} />
 
       {/* Shop Info */}
-      <div className="px-4 py-4 space-y-4">
+      <div className="detail-surface space-y-6">
         <div>
           <div className="flex items-start justify-between gap-2">
             <h1 className="font-bold text-market-dark text-xl">{shop.name}</h1>
@@ -134,7 +120,7 @@ export default function ShopDetailPage() {
             </span>
           </div>
           <p className="text-muted-foreground text-sm mt-1">{shop.description}</p>
-          <div className="flex items-center gap-3 mt-2">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-2 mt-3">
             <span className="flex items-center gap-1 text-sm text-market-orange font-bold">
               <Star size={15} strokeWidth={2.4} className="fill-amber-500 text-amber-500" /> {shop.rating} ({shop.reviewCount})
             </span>
@@ -149,12 +135,12 @@ export default function ShopDetailPage() {
 
         {/* Categories */}
         {shop.menuCategories.length > 1 && (
-          <div className="flex gap-2 overflow-x-auto pb-1.5 scrollbar-hide -mx-4 px-4 snap-x snap-mandatory overscroll-x-contain scroll-smooth">
+          <div className="sticky top-0 z-20 bg-market-cream flex gap-2 overflow-x-auto py-3 scrollbar-hide -mx-5 px-5 snap-x snap-mandatory overscroll-x-contain scroll-smooth">
             {shop.menuCategories.map((cat) => (
               <button
                 key={cat.id}
                 onClick={() => setActiveCategory(cat.id)}
-                className={`flex-shrink-0 px-4 py-1.5 rounded-full text-sm font-semibold transition-all snap-start scroll-ml-4 active:scale-95 ${
+                className={`flex-shrink-0 px-4 min-h-11 rounded-full text-sm font-semibold transition-all snap-start scroll-ml-4 active:scale-95 ${
                   activeCategory === cat.id
                     ? 'bg-market-brown text-white shadow-warm-sm'
                     : 'bg-white text-[#4A382A] border border-[#E9D7B5]/70 hover:bg-[#FAF7F0] active:bg-[#FAF7F0]'
@@ -167,7 +153,7 @@ export default function ShopDetailPage() {
         )}
 
         {/* Products */}
-        <div className="space-y-3 pb-36">
+        <div className="space-y-3 pb-24">
           {products.filter((p) => !activeCategory || p.categoryId === activeCategory).length === 0 ? (
             <div className="text-center py-10">
               <UtensilsCrossed size={36} className="text-market-brown/30 mx-auto" />

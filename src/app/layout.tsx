@@ -39,12 +39,12 @@ export const viewport: Viewport = {
   maximumScale: 1,
   userScalable: false,
   viewportFit: 'cover',
-  themeColor: '#A67C52',
+  themeColor: '#F7F3E8',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="th" className={lineSeedTH.variable}>
+    <html lang="th" className={lineSeedTH.variable} data-scroll-behavior="smooth">
       <body className={`${lineSeedTH.className} min-h-screen bg-market-cream antialiased`}>
         <ReduxProvider>
           <PwaProvider>

@@ -54,14 +54,19 @@ export default function HomePage() {
 
   const stickySentinelRef = useRef<HTMLDivElement>(null)
   const stallsRef = useRef<HTMLDivElement>(null)
+  const stallsProgressFrameRef = useRef<number | null>(null)
 
   const handleStallsScroll = () => {
     if (!stallsRef.current) return
-    const { scrollLeft, scrollWidth, clientWidth } = stallsRef.current
-    const maxScroll = scrollWidth - clientWidth
-    if (maxScroll > 0) {
-      setStallsScrollProgress(Math.min(1, Math.max(0, scrollLeft / maxScroll)))
-    }
+    if (stallsProgressFrameRef.current !== null) return
+    stallsProgressFrameRef.current = window.requestAnimationFrame(() => {
+      const rail = stallsRef.current
+      if (rail) {
+        const maxScroll = rail.scrollWidth - rail.clientWidth
+        if (maxScroll > 0) setStallsScrollProgress(Math.min(1, Math.max(0, rail.scrollLeft / maxScroll)))
+      }
+      stallsProgressFrameRef.current = null
+    })
   }
 
   const handleSheetTouchStart = (e: React.TouchEvent) => {
@@ -174,6 +179,47 @@ export default function HomePage() {
   }, [user?.id])
 
   useEffect(() => {
+    const rail = stallsRef.current
+    if (!rail || shops.length < 2 || searchQuery || selectedCategory) return
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+
+    let touching = false
+    let hovering = false
+    const enter = (event: PointerEvent) => { hovering = event.pointerType === 'mouse' }
+    const leave = () => { hovering = false }
+    const pause = () => { touching = true }
+    const resume = () => { touching = false }
+    const autoScroll = () => {
+      if (touching || hovering || document.hidden || rail.contains(document.activeElement) ||
+        window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+      const firstCard = rail.firstElementChild as HTMLElement | null
+      const secondCard = firstCard?.nextElementSibling as HTMLElement | null
+      const maxScroll = rail.scrollWidth - rail.clientWidth
+      if (!firstCard || !secondCard || maxScroll <= 0) return
+      const step = secondCard.offsetLeft - firstCard.offsetLeft
+      const nextPosition = rail.scrollLeft >= maxScroll - 2 ? 0 : Math.min(maxScroll, rail.scrollLeft + step)
+      rail.scrollTo({ left: nextPosition, behavior: 'smooth' })
+    }
+
+    const timer = window.setInterval(autoScroll, 5_000)
+    rail.addEventListener('pointerenter', enter)
+    rail.addEventListener('pointerleave', leave)
+    rail.addEventListener('pointerdown', pause)
+    window.addEventListener('pointerup', resume)
+    window.addEventListener('pointercancel', resume)
+    return () => {
+      window.clearInterval(timer)
+      if (stallsProgressFrameRef.current !== null) window.cancelAnimationFrame(stallsProgressFrameRef.current)
+      stallsProgressFrameRef.current = null
+      rail.removeEventListener('pointerenter', enter)
+      rail.removeEventListener('pointerleave', leave)
+      rail.removeEventListener('pointerdown', pause)
+      window.removeEventListener('pointerup', resume)
+      window.removeEventListener('pointercancel', resume)
+    }
+  }, [searchQuery, selectedCategory, shops.length])
+
+  useEffect(() => {
     try {
       const saved: unknown = JSON.parse(localStorage.getItem(RECENT_SEARCHES_KEY) || '[]')
       if (Array.isArray(saved)) setRecentSearches(saved.filter((term): term is string => typeof term === 'string').slice(0, MAX_RECENT_SEARCHES))
@@ -232,7 +278,7 @@ export default function HomePage() {
     <div className="animate-fade-in bg-market-cream">
 
       {/* ── SECTION 1: HEADER & GREETING (Warm Cream) ────────────────────── */}
-      <div className="px-5 pt-[max(1.5rem,calc(env(safe-area-inset-top,0px)))] pb-4">
+      <div className="home-inset pt-[max(1.5rem,env(safe-area-inset-top,0px))] pb-6">
         <div className="flex items-center justify-between">
           <div className="flex flex-col">
             <h1 className="text-market-dark font-bold text-[24px] leading-tight flex items-center gap-1.5">
@@ -289,7 +335,7 @@ export default function HomePage() {
       <div ref={stickySentinelRef} className="h-0 w-full pointer-events-none" />
 
       {/* ── STICKY SEARCH BAR (Stays fixed when scrolling down) ─────────── */}
-      <div className="sticky top-0 z-30 bg-market-cream/98 backdrop-blur-md px-5 pt-[max(0.35rem,calc(env(safe-area-inset-top,0px)+0.25rem))] pb-4 transition-all border-b border-market-beige/60 shadow-[0_4px_16px_rgba(46,35,24,0.04)]">
+      <div className="home-inset sticky top-0 z-30 bg-market-cream/98 backdrop-blur-md pt-[env(safe-area-inset-top,0px)] pb-3">
         <div className="flex items-center gap-2.5">
           <div className="relative flex-1">
             <input
@@ -367,12 +413,12 @@ export default function HomePage() {
       </div>
 
       {/* ── SWIPEABLE HERO PROMO CAROUSEL (ปัดซ้าย-ปัดขวา ใต้ Search Bar) ── */}
-      <div className="px-5 pt-1">
+      <div className="home-inset pt-3">
         <PromoCarousel />
       </div>
 
       {/* ── CATEGORIES (4 Items on Warm Cream Background) ──────────────── */}
-      <div className="px-5 pt-4 pb-5">
+      <div className="home-inset pt-6">
         <div className="grid grid-cols-4 gap-2.5">
           {BRAND_CATEGORIES.map((cat) => {
             const isActive = selectedCategory === cat.id
@@ -403,7 +449,7 @@ export default function HomePage() {
       </div>
 
       {/* ── RESTAURANTS & DISHES ───────────────────────────────────────── */}
-      <div className="bg-white rounded-t-3xl border-t border-market-beige/70 shadow-[0_-8px_24px_rgba(46,35,24,0.03)] px-5 pt-5 pb-32 space-y-7 mt-5 min-h-screen">
+      <div className="home-inset bg-white rounded-t-3xl border-t border-market-beige/70 pt-6 pb-28 space-y-6 mt-6">
 
         {/* ── Search / Filter Results ─────────────────── */}
         {searchQuery || selectedCategory ? (
@@ -488,7 +534,7 @@ export default function HomePage() {
               </div>
 
               {loading ? (
-                <div className="flex gap-3 overflow-hidden -mx-5 px-5">
+                <div className="home-rail flex gap-3 overflow-hidden">
                   {[...Array(3)].map((_, i) => (
                     <div
                       key={i}
@@ -510,13 +556,13 @@ export default function HomePage() {
                   <div
                     ref={stallsRef}
                     onScroll={handleStallsScroll}
-                    className="flex gap-3.5 overflow-x-auto pb-2 scrollbar-hide -mx-5 px-5 snap-x snap-mandatory overscroll-x-contain scroll-smooth"
+                    className="home-rail flex gap-3.5 overflow-x-auto pb-2 scrollbar-hide overscroll-x-contain"
                   >
                     {shops.map((shop) => (
                       <Link
                         key={shop.id}
                         href={`/shops/${shop.id}`}
-                        className="w-54 sm:w-58 shrink-0 bg-white rounded-2xl overflow-hidden border border-market-beige/60 shadow-warm-xs hover:shadow-warm-sm active:scale-[0.97] transition-all group block snap-start scroll-ml-5"
+                          className="w-54 sm:w-58 shrink-0 bg-white rounded-2xl overflow-hidden border border-market-beige/60 shadow-warm-xs hover:shadow-warm-sm active:scale-[0.97] transition-all group block"
                       >
                         <div className="h-30 bg-gray-100 relative overflow-hidden">
                           <img
@@ -663,12 +709,6 @@ export default function HomePage() {
           </>
         )}
       </div>
-
-      {/* Cover the shared bottom-navigation reserve so the page ends in the white content surface. */}
-      <div
-        aria-hidden="true"
-        className="h-[calc(5.75rem+env(safe-area-inset-bottom,0px))] -mb-[calc(5.75rem+env(safe-area-inset-bottom,0px))] bg-white"
-      />
 
       {/* ── FILTER BOTTOM SHEET MODAL (Rendered via Portal to sit above navbar & floating elements) ── */}
       {showFilterModal && createPortal(

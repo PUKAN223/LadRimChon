@@ -34,9 +34,15 @@ export default function OrderDetailPage() {
     }).catch(() => {
       if (active) { setError('โหลดออเดอร์ไม่สำเร็จ กรุณาลองใหม่'); setLoading(false) }
     })
-    const interval = setInterval(loadOrder, 3000)
-    return () => { active = false; clearInterval(interval) }
+    return () => { active = false }
   }, [id, loadOrder])
+
+  useEffect(() => {
+    if (order?.status !== 'pending') return
+    const delay = Math.max(0, new Date(order.createdAt).getTime() + 5_000 - Date.now())
+    const timer = window.setTimeout(() => { void loadOrder() }, delay + 10)
+    return () => window.clearTimeout(timer)
+  }, [loadOrder, order?.createdAt, order?.status])
 
   const handleAdvanceStatus = async () => {
     if (!order || advancing || process.env.NODE_ENV === 'production') return
@@ -84,11 +90,11 @@ export default function OrderDetailPage() {
     <div className="animate-fade-in">
       <MarketHeader showBack backHref="/orders" title={`ออเดอร์ #${order.orderNumber}`} showCart={false} />
 
-      <div className="px-4 pt-4 space-y-4 pb-32">
+      <div className="px-5 pt-6 space-y-6 pb-28">
         {error && <p role="alert" className="text-red-700 text-sm">{error}</p>}
         <p className="text-xs text-market-muted">ออเดอร์ทดลองบนอุปกรณ์นี้ ยังไม่ส่งถึงร้าน</p>
         {/* Status Card */}
-        <div className="bg-card rounded-3xl p-4 shadow-warm animate-reveal-on-scroll">
+        <div className="bg-card rounded-2xl p-4 border border-market-beige/60">
           <div className="flex items-center justify-between mb-3">
             <div>
               <p className="text-xs text-muted-foreground">ออเดอร์</p>
@@ -114,7 +120,7 @@ export default function OrderDetailPage() {
         </div>
 
         {/* Shop & Pickup Info */}
-        <div className="bg-card rounded-2xl p-4 shadow-warm-sm space-y-2.5 animate-reveal-on-scroll">
+        <div className="bg-white rounded-2xl p-4 border border-market-beige/60 space-y-2.5">
           <h3 className="font-semibold text-market-dark text-sm">ข้อมูลรับอาหาร</h3>
           <div className="flex items-center gap-2 text-sm text-market-dark">
             <Store size={15} className="text-market-orange flex-shrink-0" />
@@ -135,7 +141,7 @@ export default function OrderDetailPage() {
         {order.status === 'ready' && (
           <Link
             href={`/orders/${order.id}/pickup`}
-            className="block w-full text-center bg-market-orange text-white font-bold py-4 px-5 rounded-2xl shadow-orange-glow hover:bg-[#E8894E] transition-all animate-bounce-in"
+            className="block w-full text-center bg-market-orange text-white font-bold py-4 px-5 rounded-2xl shadow-warm-xs hover:bg-[#E8894E] transition-all"
           >
             <span className="flex items-center justify-center gap-2">
               <Sparkles size={18} /> พร้อมรับอาหารแล้ว! — ดูรหัสรับ
@@ -144,7 +150,7 @@ export default function OrderDetailPage() {
         )}
 
         {/* Order Items */}
-        <div className="bg-card rounded-2xl p-4 shadow-warm-sm animate-reveal-on-scroll">
+        <div className="bg-white rounded-2xl p-4 border border-market-beige/60">
           <h3 className="font-semibold text-market-dark text-sm mb-3">รายการอาหาร</h3>
           <div className="space-y-2">
             {order.items.map((item) => (

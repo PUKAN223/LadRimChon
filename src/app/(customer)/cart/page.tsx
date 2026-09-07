@@ -10,9 +10,12 @@ import { useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 import { setCurrentOrder } from '@/store/slices/order.slice'
 import { Shop } from '@/domain/shop/shop.model'
+import { Order } from '@/domain/order/order.model'
+import { ImageWithSkeleton } from '@/components/ui/image-with-skeleton'
 
 type CartGroup = { shopId: string; shopName: string; items: CartItem[] }
 type CheckoutGroup = CartGroup & { shop: Shop }
+const getCurrentTime = () => Date.now()
 
 export default function CartPage() {
   const dispatch = useAppDispatch()
@@ -25,6 +28,7 @@ export default function CartPage() {
   const [checking, setChecking] = useState(false)
   const [showConfirmation, setShowConfirmation] = useState(false)
   const [checkoutGroups, setCheckoutGroups] = useState<CheckoutGroup[]>([])
+  const [reviewedAt, setReviewedAt] = useState(0)
   const [error, setError] = useState('')
   const [cartReady, setCartReady] = useState(false)
   const submitting = useRef(false)
@@ -45,7 +49,7 @@ export default function CartPage() {
     return groups
   }, {}))
   const groupTotal = (items: CartItem[]) => items.reduce((sum, item) => sum + item.subtotal, 0)
-  const formatReadyTime = (minutes: number) => new Date(Date.now() + minutes * 60 * 1000).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })
+  const formatReadyTime = (minutes: number) => new Date(reviewedAt + minutes * 60 * 1000).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })
 
   const handleReviewOrder = async () => {
     if (!cartGroups.length || checking || placing) return
@@ -62,6 +66,7 @@ export default function CartPage() {
         return { ...group, shop }
       }))
       setCheckoutGroups(reviewed)
+      setReviewedAt(getCurrentTime())
       setShowConfirmation(true)
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : 'ตรวจสอบตะกร้าไม่สำเร็จ กรุณาลองใหม่')
@@ -75,18 +80,19 @@ export default function CartPage() {
     setError('')
     try {
       const orderRepo = getOrderRepository()
-      const orders = await Promise.all(checkoutGroups.map(async (group) => {
+      const orderData = await Promise.all(checkoutGroups.map(async (group) => {
         const products = await getProductRepository().getProducts(group.shopId)
         const validationError = validateCart(group.items, group.shop, products)
         if (validationError) throw new Error(`${group.shopName}: ${validationError}`)
-        return orderRepo.createOrder({
+        return {
           shopId: group.shopId, shopName: group.shopName, customerId: user.id,
           items: group.items.map(({ shopId: _shopId, shopName: _shopName, ...item }) => item),
           note: orderNote, totalPrice: groupTotal(group.items), status: 'pending', orderNumber: '', pickupCode: '',
           pickupZone: group.shop.zone || 'หน้าร้าน',
           estimatedReadyTime: new Date(Date.now() + group.shop.preparationTime * 60 * 1000).toISOString(),
-        })
+        } satisfies Omit<Order, 'id' | 'createdAt' | 'updatedAt'>
       }))
+      const orders = await orderRepo.createOrders(orderData)
       dispatch(setCurrentOrder(orders[0]))
       dispatch(clearCart())
       router.push('/orders')
@@ -103,7 +109,7 @@ export default function CartPage() {
   return (
     <div className="animate-fade-in pb-32">
       <MarketHeader showBack backHref="/" title="ตะกร้า" showCart={false} />
-      <div className="px-4 pt-4 space-y-5">
+      <div className="px-5 pt-6 space-y-6">
         <p className="text-xs text-market-muted">ตะกร้านี้มี {cartGroups.length} ร้าน ระบบจะสร้างออเดอร์แยกสำหรับแต่ละร้าน</p>
         {cartGroups.map((group) => (
           <section key={group.shopId} className="space-y-3">
@@ -114,7 +120,7 @@ export default function CartPage() {
             {group.items.map((item) => (
               <div key={item.id} className="bg-card rounded-2xl p-3 shadow-warm-sm">
                 <div className="flex gap-3">
-                  <div className="w-14 h-14 rounded-xl bg-market-cream flex items-center justify-center shrink-0 overflow-hidden border border-[#E9D7B5]/50">{item.productImageUrl ? <img src={item.productImageUrl} alt={item.productName} className="w-full h-full object-cover" /> : <UtensilsCrossed size={20} className="text-market-brown/50" />}</div>
+                  <div className="relative w-14 h-14 rounded-xl bg-market-cream flex items-center justify-center shrink-0 overflow-hidden border border-[#E9D7B5]/50">{item.productImageUrl ? <ImageWithSkeleton wrapperClassName="absolute inset-0" src={item.productImageUrl} alt={item.productName} className="object-cover" fallbackSrc="/images/food/default.jpg" /> : <UtensilsCrossed size={20} className="text-market-brown/50" />}</div>
                   <div className="flex-1 min-w-0"><h3 className="font-semibold text-market-dark text-sm truncate">{item.productName}</h3>
                     {item.selectedChoices.length > 0 && <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{item.selectedChoices.map((choice) => choice.choiceName).join(', ')}</p>}
                     {item.note && <p className="text-xs text-muted-foreground mt-0.5 italic">“{item.note}”</p>}
@@ -131,9 +137,9 @@ export default function CartPage() {
         ))}
         <div><label className="font-semibold text-market-dark text-sm block mb-2">หมายเหตุถึงทุกร้าน (ถ้ามี)</label><textarea aria-label="หมายเหตุถึงทุกร้าน" maxLength={300} disabled={placing} value={orderNote} onChange={(event) => setOrderNote(event.target.value)} placeholder="เช่น มารับพร้อมกัน..." rows={2} className="w-full px-4 py-3 bg-card border-2 border-market-beige rounded-2xl text-sm text-market-dark placeholder:text-muted-foreground focus:outline-none focus:border-market-orange/60 resize-none" /></div>
         <p className="text-xs text-market-muted leading-relaxed">ออเดอร์เป็นข้อมูลจำลองบนอุปกรณ์นี้ และยังไม่มีการตัดเงินจริง</p>
-        <div className="bg-card rounded-2xl p-4 shadow-warm-sm flex justify-between font-bold text-market-dark"><span>ยอดที่ต้องชำระ</span><span className="text-market-brown text-lg">฿{total}</span></div>
+        <div className="bg-white rounded-2xl p-4 border border-market-beige/60 flex justify-between font-bold text-market-dark"><span>ยอดที่ต้องชำระ</span><span className="text-market-brown text-lg">฿{total}</span></div>
       </div>
-      <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] p-4 pb-[max(1rem,env(safe-area-inset-bottom))] bg-[#F7F3E8]/95 backdrop-blur-md border-t border-[#E9D7B5] z-50 shadow-[0_-4px_16px_rgba(46,35,24,0.06)]">
+      <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] px-5 py-4 pb-[max(1rem,env(safe-area-inset-bottom))] bg-[#F7F3E8]/95 backdrop-blur-md border-t border-[#E9D7B5] z-50 shadow-[0_-4px_16px_rgba(46,35,24,0.06)]">
         {error && <p role="alert" className="text-sm text-red-700 mb-3">{error}</p>}
         <button onClick={handleReviewOrder} disabled={placing || checking} className="w-full flex items-center justify-between bg-market-brown text-white font-bold py-3.5 px-5 rounded-2xl shadow-warm-lg disabled:opacity-60"><span className="flex items-center gap-2">{placing || checking ? <><Loader2 size={18} className="animate-spin" />{checking ? 'กำลังตรวจสอบรายการ...' : 'กำลังส่งออเดอร์...'}</> : <><CheckCircle2 size={18} className="text-emerald-400" />ตรวจสอบและยืนยัน</>}</span><span className="font-black text-lg">฿{total}</span></button>
       </div>

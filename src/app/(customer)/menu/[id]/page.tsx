@@ -8,7 +8,9 @@ import { useCartActions } from '@/components/providers/cart-actions-provider'
 import Link from 'next/link'
 import { NewCartItem } from '@/store/slices/cart.slice'
 import { SelectedChoice } from '@/domain/order/order.model'
-import { Minus, Plus, ShoppingCart, SearchX, Flame, Star, CheckCircle2, ChevronLeft } from 'lucide-react'
+import { Minus, Plus, ShoppingCart, SearchX, Flame, Star, CheckCircle2 } from 'lucide-react'
+
+import { DetailHero } from '@/components/market/DetailHero'
 
 export default function MenuDetailPage() {
   const { id } = useParams<{ id: string }>()
@@ -96,7 +98,7 @@ export default function MenuDetailPage() {
 
   if (loading) {
     return (
-      <div className="animate-pulse p-4 space-y-4">
+      <div className="animate-pulse p-4 space-y-4 pt-[max(1rem,calc(env(safe-area-inset-top,0px)+1rem))]">
         <div className="h-56 bg-market-beige rounded-3xl" />
         <div className="h-6 bg-market-beige rounded-xl w-3/4" />
         <div className="h-4 bg-market-beige rounded-xl w-full" />
@@ -120,29 +122,9 @@ export default function MenuDetailPage() {
 
   return (
     <div className="animate-fade-in pb-32">
-      {/* Full-bleed product hero */}
-      <div className="h-[min(52dvh,30rem)] min-h-72 bg-gray-100 relative overflow-hidden">
-        <img
-          src={product.imageUrl || '/images/food/default.jpg'}
-          alt={product.name}
-          className="w-full h-full object-cover"
-          onError={(e) => {
-            const target = e.target as HTMLImageElement
-            target.src = '/images/food/default.jpg'
-          }}
-        />
-        <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-background to-transparent" />
-        <Link
-          href={`/shops/${product.shopId}`}
-          data-navigation-direction="back"
-          aria-label="กลับไปร้านค้า"
-          className="absolute top-[max(1rem,env(safe-area-inset-top,0px))] left-4 w-11 h-11 rounded-full bg-white/95 backdrop-blur-md border border-white/80 text-market-dark shadow-warm flex items-center justify-center active:scale-95 transition-transform"
-        >
-          <ChevronLeft size={23} strokeWidth={2.8} />
-        </Link>
-      </div>
+      <DetailHero src={product.imageUrl || '/images/food/default.jpg'} alt={product.name} backHref={`/shops/${product.shopId}`} />
 
-      <div className="px-4 pt-3 space-y-5">
+      <div className="detail-surface space-y-6">
         {/* Product Info */}
         <div>
           {(product.tags.includes('bestseller') || product.tags.includes('popular')) && (
@@ -180,7 +162,7 @@ export default function MenuDetailPage() {
               {option.choices.map((choice) => (
                 <label
                   key={choice.id}
-                  className={`flex items-center justify-between p-3 rounded-2xl border-2 cursor-pointer transition-all ${
+                  className={`flex items-center justify-between p-3 rounded-2xl border cursor-pointer transition-all ${
                     selectedChoices[option.id]?.id === choice.id
                       ? 'border-market-orange bg-market-orange/5'
                       : 'border-market-beige bg-card hover:border-market-brown/30'
@@ -188,7 +170,7 @@ export default function MenuDetailPage() {
                 >
                   <div className="flex items-center gap-3">
                     <div
-                      className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
+                      className={`w-5 h-5 rounded-full border flex items-center justify-center transition-all ${
                         selectedChoices[option.id]?.id === choice.id
                           ? 'border-market-orange bg-market-orange'
                           : 'border-market-beige'
@@ -228,7 +210,7 @@ export default function MenuDetailPage() {
             onChange={(e) => setNote(e.target.value)}
             placeholder="เช่น ไม่ใส่ผัก, ไม่เผ็ด..."
             rows={2}
-            className="w-full px-4 py-3 bg-card border-2 border-market-beige rounded-2xl text-sm text-market-dark placeholder:text-muted-foreground focus:outline-none focus:border-market-orange/60 transition-colors resize-none"
+            className="w-full px-4 py-3 bg-card border border-market-beige rounded-2xl text-sm text-market-dark placeholder:text-muted-foreground focus:outline-none focus:border-market-orange/60 transition-colors resize-none"
           />
         </div>
 
@@ -240,7 +222,7 @@ export default function MenuDetailPage() {
               aria-label="ลดจำนวน"
               disabled={quantity <= 1}
               onClick={() => setQuantity(Math.max(1, quantity - 1))}
-              className="w-11 h-11 rounded-full bg-market-cream border-2 border-market-beige flex items-center justify-center hover:bg-market-beige transition-colors"
+              className="w-11 h-11 rounded-full bg-market-cream border border-market-beige flex items-center justify-center hover:bg-market-beige transition-colors"
             >
               <Minus size={16} className="text-market-dark" />
             </button>
@@ -249,7 +231,7 @@ export default function MenuDetailPage() {
               aria-label="เพิ่มจำนวน"
               disabled={quantity >= Math.min(product.stock ?? 99, 99)}
               onClick={() => setQuantity(Math.min(quantity + 1, product.stock ?? 99, 99))}
-              className="w-11 h-11 rounded-full bg-market-orange text-white flex items-center justify-center hover:bg-[#E8894E] transition-colors shadow-orange-glow"
+              className="w-11 h-11 rounded-full bg-market-orange text-white flex items-center justify-center hover:bg-[#E8894E] transition-colors shadow-warm-xs"
             >
               <Plus size={16} />
             </button>
@@ -258,12 +240,12 @@ export default function MenuDetailPage() {
       </div>
 
       {/* Add to Cart Button */}
-      <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] p-4 pb-[max(1rem,env(safe-area-inset-bottom))] bg-[#F7F3E8]/95 backdrop-blur-md border-t border-[#E9D7B5] z-50 shadow-[0_-4px_16px_rgba(46,35,24,0.06)]">
+      <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] px-5 py-4 pb-[max(1rem,env(safe-area-inset-bottom))] bg-[#F7F3E8]/95 backdrop-blur-md border-t border-[#E9D7B5] z-50">
         {error && <p role="alert" className="text-sm text-red-700 mb-2">{error}</p>}
         <button
           onClick={handleAddToCart}
           disabled={!product.isAvailable || product.stock === 0 || !shopOpen || adding}
-          className="w-full flex items-center justify-between bg-market-brown text-white font-bold py-3.5 px-5 rounded-2xl shadow-warm-lg hover:bg-[#8A6540] transition-all duration-200 hover:scale-[1.01] active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed"
+          className="w-full flex items-center justify-between bg-market-brown text-white font-bold py-3.5 px-5 rounded-2xl hover:bg-[#8A6540] transition-colors duration-200 active:bg-[#8A6540] disabled:opacity-60 disabled:cursor-not-allowed"
         >
           <div className="flex items-center gap-2">
             <ShoppingCart size={20} />

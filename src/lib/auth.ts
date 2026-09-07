@@ -44,7 +44,27 @@ function readAccounts(): StoredAccount[] {
 }
 
 function publicUser(account: StoredAccount): User {
-  return { id: account.id, name: account.name, studentId: account.studentId, email: account.email, phone: account.phone }
+  return { id: account.id, name: account.name, studentId: account.studentId, email: account.email, phone: account.phone, avatarUrl: account.avatarUrl, points: account.points ?? 0 }
+}
+
+export function updateAvatar(userId: string, avatarUrl: string): User {
+  const accounts = readAccounts()
+  const index = accounts.findIndex((account) => account.id === userId)
+  if (index === -1) throw new Error('ไม่พบบัญชีสำหรับบันทึกรูปโปรไฟล์')
+
+  accounts[index] = { ...accounts[index], avatarUrl }
+  try { localStorage.setItem(ACCOUNTS_KEY, JSON.stringify(accounts)) } catch { throw new Error('บันทึกรูปโปรไฟล์ไม่สำเร็จ') }
+  return publicUser(accounts[index])
+}
+
+export function awardPoints(userId: string, points: number): User {
+  const accounts = readAccounts()
+  const index = accounts.findIndex((account) => account.id === userId)
+  if (index === -1) throw new Error('ไม่พบบัญชีสำหรับเพิ่มแต้ม')
+
+  accounts[index] = { ...accounts[index], points: (accounts[index].points ?? 0) + points }
+  try { localStorage.setItem(ACCOUNTS_KEY, JSON.stringify(accounts)) } catch { throw new Error('บันทึกแต้มไม่สำเร็จ') }
+  return publicUser(accounts[index])
 }
 
 export async function registerAccount(input: { studentId: string; email: string; phone: string; password: string }) {
@@ -64,6 +84,7 @@ export async function registerAccount(input: { studentId: string; email: string;
     studentId,
     email,
     phone,
+    points: 0,
     salt,
     passwordHash: await hashPassword(input.password, salt),
     createdAt: new Date().toISOString(),

@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import Link from 'next/link'
 import { Sparkles, ChevronRight } from 'lucide-react'
+import { ImageWithSkeleton } from '@/components/ui/image-with-skeleton'
 
 interface BannerItem {
   id: string
@@ -164,12 +165,13 @@ export function PromoCarousel() {
             <div key={b.id} className="w-full flex-shrink-0">
               <div className="relative h-[155px] sm:h-[165px] rounded-[24px] overflow-hidden bg-[#2E2318] shadow-warm border border-[#E9D7B5]/60 group">
                 {/* Background Image with Dark Vignette Gradient */}
-                <img
+                <ImageWithSkeleton
+                  wrapperClassName="absolute inset-0"
                   src={b.image}
                   alt={b.title}
-                  className="absolute inset-0 w-full h-full object-cover opacity-45 group-hover:scale-105 transition-transform duration-700"
+                  className="absolute inset-0 w-full h-full object-cover opacity-30 group-hover:scale-105 transition-transform duration-700"
                 />
-                <div className="absolute inset-0 bg-gradient-to-r from-[#2E2318] via-[#2E2318]/85 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-r from-[#2E2318] via-[#2E2318]/90 to-transparent" />
 
                 {/* Content Overlay */}
                 <div className="relative h-full flex flex-col justify-between p-4 z-10">

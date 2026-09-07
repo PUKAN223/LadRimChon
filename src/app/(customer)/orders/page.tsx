@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useAppSelector } from '@/lib/hooks'
 import { getOrderRepository } from '@/lib/repositories'
 import { Order } from '@/domain/order/order.model'
@@ -11,16 +11,17 @@ import { CalendarDays, RotateCcw } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
 function OrderCard({ order, formatDate, onReorder }: { order: Order; formatDate: (iso: string) => string; onReorder: (order: Order, event: React.MouseEvent) => void }) {
-  const isActive = order.status !== 'completed' && order.status !== 'cancelled'
+  const isReady = order.status === 'ready'
   return (
-    <Link href={`/orders/${order.id}`} className="block animate-reveal-on-scroll content-auto">
-      <div className={`bg-white rounded-2xl p-4 shadow-warm-xs hover:shadow-warm transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.99] border ${isActive ? 'border-market-orange/70 ring-2 ring-market-orange/15' : 'border-[#E9D7B5]/50'}`}>
+    <Link href={isReady ? `/orders/${order.id}/pickup` : `/orders/${order.id}`} className="block content-auto">
+      <div className={`bg-white rounded-2xl p-4 transition-colors duration-200 hover:border-market-brown/40 active:scale-[0.99] border ${isReady ? 'border-market-green/60' : 'border-[#E9D7B5]/50'}`}>
         <div className="flex items-start justify-between gap-2">
           <div className="flex-1 min-w-0"><div className="flex items-center gap-2"><span className="font-bold text-[#2E2318] text-[15px]">#{order.orderNumber}</span><span className="text-xs text-muted-foreground">·</span><span className="text-xs font-semibold text-[#8A7B6D] truncate">{order.shopName}</span></div><p className="text-xs text-[#8A7B6D] mt-1 font-medium">{order.items.length} รายการ · <span className="font-bold text-market-brown">฿{order.totalPrice}</span></p><p className="text-[11px] text-[#A67C52] mt-0.5">{formatDate(order.createdAt)}</p></div>
           <OrderStatusBadge status={order.status} size="sm" />
         </div>
         <div className="flex items-center justify-between gap-2 mt-3 pt-2.5 border-t border-[#E9D7B5]/30">
           <div className="flex items-center gap-1 flex-wrap flex-1 min-w-0">{order.items.slice(0, 2).map((item) => <span key={item.id} className="text-[11px] font-medium bg-[#FAF7F0] text-[#6B5A4B] px-2 py-0.5 rounded-lg border border-[#E9D7B5]/40 truncate max-w-[140px]">{item.productName}</span>)}{order.items.length > 2 && <span className="text-[10px] text-muted-foreground">+{order.items.length - 2} อื่นๆ</span>}</div>
+          {isReady && <span className="text-xs font-semibold text-emerald-700">รับอาหาร →</span>}
           {order.status === 'completed' && <button onClick={(event) => onReorder(order, event)} className="flex items-center gap-1 text-[11px] font-bold text-market-orange hover:text-[#E8894E] px-2 py-1 rounded-lg bg-orange-50 hover:bg-orange-100 transition-colors flex-shrink-0"><RotateCcw size={12} /><span>สั่งอีกครั้ง</span></button>}
         </div>
       </div>
@@ -35,19 +36,31 @@ export default function OrdersPage() {
   const [activeTab, setActiveTab] = useState<'all' | 'active' | 'completed'>('all')
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    const load = async () => {
-      if (!user) {
-        setLoading(false)
-        return
-      }
-      const orderRepo = getOrderRepository()
-      const data = await orderRepo.getOrders(user.id)
-      setOrders(data)
+  const loadOrders = useCallback(async () => {
+    if (!user) {
       setLoading(false)
+      return
     }
-    load()
+    const data = await getOrderRepository().getOrders(user.id)
+    setOrders(data)
+    setLoading(false)
   }, [user])
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => { void loadOrders() }, 0)
+    return () => window.clearTimeout(timer)
+  }, [loadOrders])
+
+  useEffect(() => {
+    const nextPendingOrder = orders
+      .filter((order) => order.status === 'pending')
+      .reduce<Order | null>((earliest, order) => !earliest || order.createdAt < earliest.createdAt ? order : earliest, null)
+    if (!nextPendingOrder) return
+
+    const delay = Math.max(0, new Date(nextPendingOrder.createdAt).getTime() + 5_000 - Date.now())
+    const timer = window.setTimeout(() => { void loadOrders() }, delay + 10)
+    return () => window.clearTimeout(timer)
+  }, [loadOrders, orders])
 
   const formatDate = (iso: string) => {
     const d = new Date(iso)
@@ -94,7 +107,7 @@ export default function OrdersPage() {
       <MarketHeader title="ออเดอร์ของฉัน" showCart={false} />
 
       {/* Tabs */}
-      <div className="px-4 pt-3 animate-reveal-on-scroll">
+      <div className="px-5 pt-6">
         <div className="flex bg-white/70 p-1 rounded-2xl border border-[#E9D7B5]/60">
           <button
             onClick={() => setActiveTab('all')}
@@ -114,7 +127,7 @@ export default function OrdersPage() {
                 : 'text-[#8A7B6D] hover:text-[#2E2318]'
             }`}
           >
-            กำลังทำ ({orders.filter((o) => o.status !== 'completed' && o.status !== 'cancelled').length})
+            กำลังดำเนินการ ({orders.filter((o) => o.status !== 'completed' && o.status !== 'cancelled').length})
           </button>
           <button
             onClick={() => setActiveTab('completed')}
@@ -129,7 +142,7 @@ export default function OrdersPage() {
         </div>
       </div>
 
-      <div className="px-4 pt-4 space-y-3 pb-32">
+      <div className="px-5 pt-6 space-y-4 pb-28">
         {loading ? (
           <div className="space-y-3">
             {[...Array(3)].map((_, i) => (
@@ -138,7 +151,7 @@ export default function OrdersPage() {
           </div>
         ) : filteredOrders.length === 0 ? (
           <div className="flex flex-col items-center justify-center min-h-[50vh] gap-4">
-            <img src="/images/empty-orders-student.png" alt="นักศึกษากำลังดูรายการอาหาร" className="h-40 w-44 object-contain animate-bounce-in" />
+            <img src="/images/empty-orders-student.png" alt="นักศึกษากำลังดูรายการอาหาร" className="h-40 w-44 object-contain" />
             <div className="text-center">
               <p className="font-bold text-[#2E2318] text-base">ไม่มีออเดอร์ในหมวดนี้</p>
               <p className="text-market-muted text-xs mt-1">เลือกสั่งอาหารจากซุ้มริมน้ำได้เลย</p>

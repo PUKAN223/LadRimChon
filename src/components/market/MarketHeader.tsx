@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { ChevronLeft, ShoppingBag, Store } from 'lucide-react'
+import { ChevronLeft, Home, ShoppingBag } from 'lucide-react'
 import { useAppSelector } from '@/lib/hooks'
 import { selectCartCount } from '@/store/slices/cart.slice'
 
@@ -24,9 +24,9 @@ export function MarketHeader({
 
   return (
     <header
-      className={`sticky top-0 z-50 grid grid-cols-[44px_minmax(0,1fr)_44px] gap-2 items-center px-4 h-[calc(3.5rem+env(safe-area-inset-top,0px))] pt-[env(safe-area-inset-top,0px)] transition-all duration-300 ${transparent
-          ? 'bg-transparent'
-          : 'bg-[#F7F3E8]/95 backdrop-blur-md border-b border-[#E9D7B5]/60'
+      className={`sticky top-0 z-50 grid grid-cols-[44px_minmax(0,1fr)_44px] gap-2 items-center px-5 h-[calc(3.5rem+env(safe-area-inset-top,0px))] pt-[env(safe-area-inset-top,0px)]  ${transparent
+        ? 'bg-transparent'
+        : 'bg-[#F7F3E8]/95 backdrop-blur-md border-b border-[#E9D7B5]/60'
         }`}
     >
       {/* Left */}
@@ -36,17 +36,17 @@ export function MarketHeader({
             href={backHref}
             data-navigation-direction="back"
             aria-label="ย้อนกลับ"
-            className="flex items-center justify-center w-11 h-11 rounded-full bg-white border border-[#E9D7B5]/70 shadow-xs hover:bg-[#FAF7F0] active:scale-95 transition-all text-[#2E2318]"
+            className="flex items-center justify-center w-11 h-11 rounded-full bg-white border border-[#E9D7B5]/70 hover:bg-[#FAF7F0] active:scale-95 transition-all text-[#2E2318]"
           >
-            <ChevronLeft size={22} strokeWidth={2.8} />
+            <ChevronLeft size={22} strokeWidth={2} />
           </Link>
         ) : (
-          <Link href="/" aria-label="หน้าหลัก" className="flex items-center justify-center w-11 h-11 group">
-            <div className="w-8 h-8 rounded-full bg-white border border-[#E9D7B5]/70 shadow-xs flex items-center justify-center text-market-brown">
-              <Store size={18} strokeWidth={2.5} />
-            </div>
-            <div className="flex flex-col leading-none">
-            </div>
+          <Link
+            href="/"
+            aria-label="หน้าหลัก"
+            className="flex items-center justify-center w-11 h-11 rounded-full bg-white border border-[#E9D7B5]/70 hover:bg-[#FAF7F0] active:scale-95 transition-all text-[#2E2318]"
+          >
+            <Home size={22} strokeWidth={2} />
           </Link>
         )}
       </div>
@@ -64,7 +64,7 @@ export function MarketHeader({
           <Link
             href="/cart"
             aria-label={`ตะกร้า ${cartCount} รายการ`}
-            className="relative flex items-center justify-center w-11 h-11 rounded-full bg-white border border-[#E9D7B5]/70 shadow-xs hover:bg-[#FAF7F0] active:scale-95 transition-all text-[#2E2318]"
+            className="relative flex items-center justify-center w-11 h-11 rounded-full bg-white border border-[#E9D7B5]/70 hover:bg-[#FAF7F0] active:scale-95 transition-all text-[#2E2318]"
           >
             <ShoppingBag size={20} strokeWidth={2.5} />
             {cartCount > 0 && (

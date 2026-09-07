@@ -25,10 +25,11 @@ function isCart(value: unknown): value is CartState {
         typeof c.choiceName === 'string' && Number.isFinite(c.priceAdd)))
 }
 
-function isUser(value: unknown): value is { id: string; name: string; studentId: string; email: string; phone: string } {
+function isUser(value: unknown): value is { id: string; name: string; studentId: string; email: string; phone: string; avatarUrl?: string; points?: number } {
   if (!value || typeof value !== 'object') return false
   const user = value as Record<string, unknown>
-  return typeof user.id === 'string' && typeof user.name === 'string' && typeof user.studentId === 'string' && typeof user.email === 'string' && typeof user.phone === 'string'
+  return typeof user.id === 'string' && typeof user.name === 'string' && typeof user.studentId === 'string' && typeof user.email === 'string' && typeof user.phone === 'string' &&
+    (user.avatarUrl === undefined || typeof user.avatarUrl === 'string') && (user.points === undefined || (typeof user.points === 'number' && Number.isFinite(user.points)))
 }
 
 export function ReduxProvider({ children }: { children: React.ReactNode }) {

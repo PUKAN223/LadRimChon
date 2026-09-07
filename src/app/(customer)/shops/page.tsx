@@ -88,11 +88,12 @@ export default function ShopsPage() {
 
 
       {/* Search & Category Filter Bar */}
-      <div className="px-5 pt-3 pb-2 space-y-3">
+      <div className="px-5 pt-6 space-y-4">
         <div className="relative">
           <Search size={20} strokeWidth={2.6} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#4A382A]" />
           <input
-            type="text"
+            type="search"
+            aria-label="ค้นหาร้านหรือเมนู"
             placeholder="ค้นหาชื่อร้าน หรือหมายเลขร้าน เช่น ร้านที่ 1..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -100,6 +101,7 @@ export default function ShopsPage() {
           />
           {search && (
             <button
+              aria-label="ล้างคำค้นหา"
               onClick={() => setSearch('')}
               className="absolute right-3.5 top-1/2 -translate-y-1/2 w-5 h-5 flex items-center justify-center rounded-full bg-[#FAF7F0] text-[#4A382A] hover:bg-gray-200 text-xs"
             >
@@ -130,8 +132,8 @@ export default function ShopsPage() {
       </div>
 
       {/* Stall Cards List */}
-      <div className="px-5 mt-3 space-y-4">
-        <div className="flex items-center justify-between text-xs text-[#8A7B6D] px-1 font-medium">
+      <div className="px-5 mt-6 space-y-4">
+        <div className="flex items-center justify-between text-xs text-[#8A7B6D] font-medium">
           <span>พบ {filteredShops.length} ร้าน</span>
           <span>เปิดบริการ 10:00 - 20:00 น.</span>
         </div>
@@ -176,16 +178,14 @@ export default function ShopsPage() {
             <p className="text-market-muted text-xs mt-1">ลองเปลี่ยนคำค้นหา หรือเลือกหมวดหมู่อื่น</p>
           </div>
         ) : (
-          filteredShops.map((shop, i) => (
+          filteredShops.map((shop) => (
             <div
               key={shop.id}
-              className="animate-slide-up content-auto"
-              style={{ animationDelay: `${i * 60}ms` }}
+              className="content-auto"
             >
               <ShopCard
                 shop={shop}
-                variant="stall"
-                previewProducts={shopProducts[shop.id]}
+                variant="default"
                 onAddToCart={handleAddToCart}
               />
             </div>

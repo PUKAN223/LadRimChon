@@ -288,25 +288,13 @@
   }
 }
 
-.animate-page-enter,
-.animate-page-enter-back {
-  animation-duration: 320ms;
-  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
-  animation-fill-mode: both;
+.animate-page-fade {
+  animation: pageFadeIn 180ms ease-out both;
 }
 
-/* New pages enter from the right; back navigation enters from the left. */
-.animate-page-enter { animation-name: pageEnterForward; }
-.animate-page-enter-back { animation-name: pageEnterBack; }
-
-@keyframes pageEnterForward {
-  from { opacity: 0; transform: translateX(100vw); }
-  to { opacity: 1; transform: translateX(0); }
-}
-
-@keyframes pageEnterBack {
-  from { opacity: 0; transform: translateX(-100vw); }
-  to { opacity: 1; transform: translateX(0); }
+@keyframes pageFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 @keyframes backdropIn {
@@ -317,6 +305,106 @@
 @keyframes bottomSheetIn {
   from { opacity: 0; transform: translateY(28px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+.reward-points-card {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: min(100%, 21rem);
+  overflow: hidden;
+  padding: 0.875rem 1rem;
+  border: 1px solid rgb(251 191 36 / 60%);
+  border-radius: 1.25rem;
+  color: #78350f;
+  background: linear-gradient(135deg, #fef3c7, #fde68a 55%, #fed7aa);
+  box-shadow: 0 12px 28px rgb(180 83 9 / 18%);
+  animation: rewardPointsPop 540ms cubic-bezier(0.22, 1.4, 0.36, 1) both;
+}
+
+.image-skeleton {
+  display: block;
+  overflow: hidden;
+  background: #f5efe6;
+}
+
+.image-skeleton-shimmer {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(110deg, #f5efe6 20%, #ebe0cf 40%, #f5efe6 60%);
+  background-size: 200% 100%;
+  animation: imageSkeletonShimmer 1.15s linear infinite;
+}
+
+.reward-confetti {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.reward-confetti span {
+  position: absolute;
+  top: 46%;
+  left: 50%;
+  width: 0.42rem;
+  height: 0.7rem;
+  border-radius: 0.12rem;
+  background: var(--confetti-color);
+  animation: rewardConfettiBurst 1.05s cubic-bezier(0.16, 0.84, 0.44, 1) both;
+  animation-delay: calc(var(--confetti-index) * 18ms + 120ms);
+}
+
+.reward-points-icon {
+  display: grid;
+  width: 2.8rem;
+  height: 2.8rem;
+  place-items: center;
+  border-radius: 1rem;
+  color: #fff;
+  background: #f59e0b;
+  box-shadow: 0 5px 14px rgb(180 83 9 / 28%);
+  font-size: 1.5rem;
+  animation: rewardStarPulse 1.2s ease-in-out 500ms infinite;
+}
+
+.reward-spark {
+  position: absolute;
+  color: #f59e0b;
+  font-size: 1.15rem;
+  animation: rewardSparkle 900ms ease-out 180ms both;
+}
+.reward-spark-one { top: 0.45rem; right: 1rem; }
+.reward-spark-two { right: 0.35rem; bottom: 0.35rem; animation-delay: 300ms; }
+
+@keyframes rewardPointsPop {
+  from { opacity: 0; transform: translateY(12px) scale(0.86); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes rewardStarPulse {
+  0%, 100% { transform: scale(1) rotate(0); }
+  50% { transform: scale(1.12) rotate(8deg); }
+}
+@keyframes rewardSparkle {
+  from { opacity: 0; transform: scale(0.3) rotate(-25deg); }
+  60% { opacity: 1; }
+  to { opacity: 0; transform: scale(1.65) rotate(25deg); }
+}
+@keyframes rewardConfettiBurst {
+  from { opacity: 0; transform: translate(-50%, -50%) rotate(0deg) scale(0); }
+  18% { opacity: 1; }
+  to {
+    opacity: 0;
+    transform: translate(
+      calc(-50% + var(--confetti-x)),
+      calc(-50% + var(--confetti-y))
+    ) rotate(var(--confetti-rotation)) scale(1);
+  }
+}
+@keyframes imageSkeletonShimmer {
+  from { background-position: 200% 0; }
+  to { background-position: -200% 0; }
 }
 
 @supports (animation-timeline: view()) {
@@ -398,8 +486,51 @@
 
 .page-content {
   min-height: 100dvh;
-  padding-bottom: calc(5.75rem + env(safe-area-inset-bottom, 0px));
   -webkit-overflow-scrolling: touch;
+}
+
+/* Shared home gutters, including full-width scrolling rails. */
+.home-inset { padding-inline: 20px; }
+.home-rail { margin-inline: -20px; padding-inline: 20px; }
+
+.detail-hero {
+  position: relative;
+  isolation: isolate;
+  height: clamp(280px, 46dvh, 430px);
+  overflow: hidden;
+  background: var(--muted);
+}
+.detail-hero-actions {
+  position: absolute;
+  z-index: 20;
+  inset: 16px 20px auto;
+  display: flex;
+  justify-content: space-between;
+  pointer-events: none;
+}
+.detail-float-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid rgb(255 255 255 / 80%);
+  background: rgb(255 255 255 / 94%);
+  color: var(--foreground);
+  box-shadow: 0 3px 12px rgb(46 35 24 / 12%);
+  backdrop-filter: blur(12px);
+  pointer-events: auto;
+  transition: transform 160ms ease, background 160ms ease;
+}
+.detail-float-button:hover { background: white; }
+.detail-float-button:active { transform: scale(0.95); }
+.detail-surface {
+  position: relative;
+  margin-top: -24px;
+  border-radius: 24px 24px 0 0;
+  background: var(--background);
+  padding: 24px 20px;
 }
 
 .app-boot-screen {

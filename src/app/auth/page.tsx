@@ -41,21 +41,21 @@ function AuthForm() {
   return (
     <main className="relative isolate min-h-screen overflow-hidden bg-white">
       <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-80 overflow-hidden">
-        <div className="auth-color-wash" />
+        <div className="absolute inset-0 bg-market-cream" />
         <img src="/background-drop.png" alt="" className="absolute inset-0 h-full w-full object-cover object-center opacity-[0.13]" />
         <div className="absolute inset-0 bg-market-cream/55" />
       </div>
       <div className="w-full">
-        <section className="relative min-h-72 overflow-hidden px-6 pb-7 pt-[max(2.5rem,env(safe-area-inset-top,0px))]">
-          <img src={mode === 'register' ? '/images/empty-cart-student.png' : '/images/auth-student.png'} alt="" className="pointer-events-none absolute -right-15 -bottom-5 h-72 w-72 object-contain" />
+        <section className="relative min-h-60 overflow-hidden px-5 pb-6 pt-[max(2.5rem,env(safe-area-inset-top,0px))]">
+          <img src={mode === 'register' ? '/images/empty-cart-student.png' : '/images/auth-student.png'} alt="" className="pointer-events-none absolute -right-6 bottom-0 h-48 w-48 object-contain" />
           <div className="relative z-10 max-w-50">
             <div className="inline-flex items-center gap-1.5 text-xs font-bold text-market-brown"><ShieldCheck size={16} /> หลาดริมชล</div>
-            <h1 className="mt-4 whitespace-pre-line text-[27px] leading-tight font-black tracking-normal text-market-dark">{mode === 'login' ? 'มื้ออร่อยของคุณ\nรออยู่ที่นี่' : 'สั่งล่วงหน้า\nรับอาหารได้ไว'}</h1>
+            <h1 className="mt-4 whitespace-pre-line text-[24px] leading-tight font-black tracking-normal text-market-dark">{mode === 'login' ? 'มื้ออร่อยของคุณ\nรออยู่ที่นี่' : 'สั่งล่วงหน้า\nรับอาหารได้ไว'}</h1>
             <p className="mt-3 text-sm leading-relaxed text-market-muted">{mode === 'login' ? 'กลับมาดูออเดอร์และร้านโปรดของคุณ' : 'สมัครครั้งเดียว เพื่อจัดการออเดอร์ได้สะดวกขึ้น'}</p>
           </div>
         </section>
 
-        <section className="relative -mt-4 min-h-[calc(100dvh-16rem)] w-full rounded-t-3xl bg-white px-6 pt-6 pb-8 shadow-[0_-8px_24px_rgba(46,35,24,0.08)]">
+        <section className="relative -mt-4 min-h-[calc(100dvh-14rem)] w-full rounded-t-3xl bg-white px-5 pt-6 pb-8 border-t border-market-beige/50">
           <div className="grid grid-cols-2 gap-1 rounded-xl bg-[#F7F3E8] p-1">
             <button type="button" onClick={() => { setMode('login'); setError('') }} className={`h-10 rounded-lg text-sm font-bold transition-colors ${mode === 'login' ? 'bg-white text-market-dark shadow-warm-xs' : 'text-market-muted'}`}>เข้าสู่ระบบ</button>
             <button type="button" onClick={() => { setMode('register'); setError('') }} className={`h-10 rounded-lg text-sm font-bold transition-colors ${mode === 'register' ? 'bg-white text-market-dark shadow-warm-xs' : 'text-market-muted'}`}>สมัครสมาชิก</button>

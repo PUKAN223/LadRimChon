@@ -1,6 +1,7 @@
 import { Product } from '@/domain/product/product.model'
 import Link from 'next/link'
 import { Plus, Flame, Star } from 'lucide-react'
+import { ImageWithSkeleton } from '@/components/ui/image-with-skeleton'
 
 const FOOD_IMAGES: Record<string, string> = {
   ชา: '/images/food/drink.jpg',
@@ -95,14 +96,12 @@ export function FoodCard({ product, onAddToCart, shopOpen = true }: FoodCardProp
       {/* Image */}
       <Link href={`/menu/${product.id}`} className="flex-shrink-0 self-center">
         <div className="w-20 h-20 rounded-xl bg-gray-100 overflow-hidden relative shadow-xs">
-          <img
+          <ImageWithSkeleton
+            wrapperClassName="absolute inset-0"
             src={imageUrl}
             alt={product.name}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-            onError={(e) => {
-              const target = e.target as HTMLImageElement
-              target.src = FOOD_IMAGES.default
-            }}
+            fallbackSrc={FOOD_IMAGES.default}
           />
         </div>
       </Link>

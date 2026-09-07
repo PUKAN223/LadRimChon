@@ -5,4 +5,5 @@ export interface User {
   email: string
   phone: string
   avatarUrl?: string
+  points?: number
 }

@@ -2,6 +2,7 @@ import { Shop } from '@/domain/shop/shop.model'
 import { Product } from '@/domain/product/product.model'
 import Link from 'next/link'
 import { Star, Clock, Plus, Store, UtensilsCrossed, ChevronRight } from 'lucide-react'
+import { ImageWithSkeleton } from '@/components/ui/image-with-skeleton'
 
 const SHOP_IMAGES: Record<string, string> = {
   noodle: '/images/stalls/noodle.webp',
@@ -39,14 +40,12 @@ export function ShopCard({
         {/* Storefront / Stall Photo Header */}
         <Link href={`/shops/${shop.id}`} className="block relative group active:scale-[0.985] transition-transform duration-150">
           <div className="h-44 sm:h-48 bg-gray-100 relative overflow-hidden">
-            <img
+            <ImageWithSkeleton
+              wrapperClassName="absolute inset-0"
               src={imageUrl}
               alt={shop.name}
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-              onError={(e) => {
-                const target = e.target as HTMLImageElement
-                target.src = SHOP_IMAGES.default
-              }}
+              fallbackSrc={SHOP_IMAGES.default}
             />
 
             {/* Top Stall Badges */}
@@ -121,15 +120,13 @@ export function ShopCard({
                     href={`/menu/${product.id}`}
                     className="flex items-center gap-2.5 flex-1 min-w-0"
                   >
-                    <div className="w-12 h-12 rounded-xl bg-gray-100 overflow-hidden flex-shrink-0 shadow-2xs">
-                      <img
+                    <div className="relative w-12 h-12 rounded-xl bg-gray-100 overflow-hidden flex-shrink-0 shadow-2xs">
+                      <ImageWithSkeleton
+                        wrapperClassName="absolute inset-0"
                         src={product.imageUrl || '/images/food/default.jpg'}
                         alt={product.name}
                         className="w-full h-full object-cover group-hover/item:scale-105 transition-transform"
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement
-                          target.src = '/images/food/default.jpg'
-                        }}
+                        fallbackSrc="/images/food/default.jpg"
                       />
                     </div>
                     <div className="flex-1 min-w-0">
@@ -168,14 +165,12 @@ export function ShopCard({
       <Link href={`/shops/${shop.id}`} className="block group active:scale-[0.985] transition-transform duration-150">
         <div className="flex items-center gap-3 p-2 bg-white rounded-2xl shadow-warm-xs hover:shadow-warm-sm transition-all duration-200 border border-[#E9D7B5]/40">
           <div className="w-16 h-16 rounded-xl flex-shrink-0 bg-gray-100 overflow-hidden relative">
-            <img
+            <ImageWithSkeleton
+              wrapperClassName="absolute inset-0"
               src={imageUrl}
               alt={shop.name}
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-              onError={(e) => {
-                const target = e.target as HTMLImageElement
-                target.src = SHOP_IMAGES.default
-              }}
+              fallbackSrc={SHOP_IMAGES.default}
             />
           </div>
           <div className="flex-1 min-w-0 pr-2">
@@ -208,14 +203,12 @@ export function ShopCard({
       >
         {/* Cover */}
         <div className="h-[135px] bg-gray-100 relative overflow-hidden">
-          <img
+          <ImageWithSkeleton
+            wrapperClassName="absolute inset-0"
             src={imageUrl}
             alt={shop.name}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-            onError={(e) => {
-              const target = e.target as HTMLImageElement
-              target.src = SHOP_IMAGES.default
-            }}
+            fallbackSrc={SHOP_IMAGES.default}
           />
 
           {!shop.isOpen && (

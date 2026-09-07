@@ -10,8 +10,8 @@ export function FloatingCart() {
   const pathname = usePathname()
   const cartCount = useAppSelector(selectCartCount)
 
-  // Don't show on Cart page itself or on dish customization/menu detail page
-  if (cartCount === 0 || pathname === '/cart' || pathname.startsWith('/menu/') || pathname.startsWith('/orders/') || pathname.startsWith('/pickup/')) {
+  // Detail pages provide their own cart action in the image hero.
+  if (cartCount === 0 || pathname === '/cart' || pathname.startsWith('/shops/') || pathname.startsWith('/menu/') || pathname.startsWith('/orders/') || pathname.startsWith('/pickup/')) {
     return null
   }
 

@@ -3,6 +3,7 @@ import { Product } from '@/domain/product/product.model'
 import Link from 'next/link'
 import { Star, Clock, Plus, Store, UtensilsCrossed, ChevronRight } from 'lucide-react'
 import { ImageWithSkeleton } from '@/components/ui/image-with-skeleton'
+import { FavoriteButton } from '@/components/ui/favorite-button'
 
 const SHOP_IMAGES: Record<string, string> = {
   noodle: '/images/stalls/noodle.webp',
@@ -36,7 +37,22 @@ export function ShopCard({
 
   if (variant === 'featured' || variant === 'stall') {
     return (
-      <div className="bg-white rounded-[24px] overflow-hidden shadow-warm-xs border border-[#E9D7B5]/60 transition-all duration-200 hover:shadow-warm-sm">
+      <div className="relative bg-white rounded-[24px] overflow-hidden shadow-warm-xs border border-[#E9D7B5]/60 transition-all duration-200 hover:shadow-warm-sm">
+        {/* Top Floating Badges & Actions */}
+        <div className="absolute top-3 right-3 z-10 flex items-center gap-1.5">
+          {shop.isOpen ? (
+            <span className="bg-emerald-500/90 backdrop-blur-md text-white text-[11px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1 shadow-xs">
+              <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+              เปิดอยู่
+            </span>
+          ) : (
+            <span className="bg-black/60 backdrop-blur-md text-white text-[11px] font-bold px-2.5 py-1 rounded-full">
+              ปิด
+            </span>
+          )}
+          <FavoriteButton type="shop" id={shop.id} name={shop.name} variant="floating" size={16} />
+        </div>
+
         {/* Storefront / Stall Photo Header */}
         <Link href={`/shops/${shop.id}`} className="block relative group active:scale-[0.985] transition-transform duration-150">
           <div className="h-44 sm:h-48 bg-gray-100 relative overflow-hidden">
@@ -54,19 +70,6 @@ export function ShopCard({
                 <Store size={14} strokeWidth={2.4} className="text-market-orange" />
                 {shop.zone}
               </span>
-            </div>
-
-            <div className="absolute top-3 right-3">
-              {shop.isOpen ? (
-                <span className="bg-emerald-500/90 backdrop-blur-md text-white text-[11px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1 shadow-xs">
-                  <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-                  เปิดอยู่
-                </span>
-              ) : (
-                <span className="bg-black/60 backdrop-blur-md text-white text-[11px] font-bold px-2.5 py-1 rounded-full">
-                  ปิด
-                </span>
-              )}
             </div>
 
             {/* Bottom Gradient overlay with shop title */}
@@ -162,8 +165,8 @@ export function ShopCard({
 
   if (variant === 'compact') {
     return (
-      <Link href={`/shops/${shop.id}`} className="block group active:scale-[0.985] transition-transform duration-150">
-        <div className="flex items-center gap-3 p-2 bg-white rounded-2xl shadow-warm-xs hover:shadow-warm-sm transition-all duration-200 border border-[#E9D7B5]/40">
+      <div className="flex items-center justify-between p-2 bg-white rounded-2xl shadow-warm-xs hover:shadow-warm-sm transition-all duration-200 border border-[#E9D7B5]/40 group">
+        <Link href={`/shops/${shop.id}`} className="flex items-center gap-3 flex-1 min-w-0 active:scale-[0.985] transition-transform duration-150">
           <div className="w-16 h-16 rounded-xl flex-shrink-0 bg-gray-100 overflow-hidden relative">
             <ImageWithSkeleton
               wrapperClassName="absolute inset-0"
@@ -189,18 +192,18 @@ export function ShopCard({
               </span>
             </div>
           </div>
-        </div>
-      </Link>
+        </Link>
+        <FavoriteButton type="shop" id={shop.id} name={shop.name} variant="subtle" size={17} className="shrink-0" />
+      </div>
     )
   }
 
   return (
-    <Link href={`/shops/${shop.id}`} className="block group active:scale-[0.985] transition-transform duration-150">
-      <div
-        className={`relative rounded-3xl overflow-hidden bg-white shadow-warm-xs border border-gray-100 hover:shadow-warm-sm transition-all duration-300 ${
-          !shop.isOpen ? 'opacity-70 grayscale-[30%]' : ''
-        }`}
-      >
+    <div className="relative rounded-3xl overflow-hidden bg-white shadow-warm-xs border border-gray-100 hover:shadow-warm-sm transition-all duration-300 group">
+      <div className="absolute top-2.5 right-2.5 z-10">
+        <FavoriteButton type="shop" id={shop.id} name={shop.name} variant="floating" size={16} />
+      </div>
+      <Link href={`/shops/${shop.id}`} className={`block active:scale-[0.985] transition-transform duration-150 ${!shop.isOpen ? 'opacity-70 grayscale-[30%]' : ''}`}>
         {/* Cover */}
         <div className="h-[135px] bg-gray-100 relative overflow-hidden">
           <ImageWithSkeleton
@@ -235,7 +238,7 @@ export function ShopCard({
             </span>
           </div>
         </div>
-      </div>
-    </Link>
+      </Link>
+    </div>
   )
 }

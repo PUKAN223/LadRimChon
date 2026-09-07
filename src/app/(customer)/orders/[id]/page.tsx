@@ -50,10 +50,10 @@ export default function OrderDetailPage() {
     if (currentIndex >= 0 && currentIndex < STATUS_SEQUENCE.length - 1) {
       setAdvancing(true)
       try {
-      const nextStatus = STATUS_SEQUENCE[currentIndex + 1]
-      const orderRepo = getOrderRepository()
-      await orderRepo.updateOrderStatus(order.id, nextStatus)
-      await loadOrder()
+        const nextStatus = STATUS_SEQUENCE[currentIndex + 1]
+        const orderRepo = getOrderRepository()
+        await orderRepo.updateOrderStatus(order.id, nextStatus)
+        await loadOrder()
       } catch { setError('อัปเดตสถานะไม่สำเร็จ กรุณาลองใหม่') }
       finally { setAdvancing(false) }
     }

@@ -98,11 +98,17 @@ export default function MenuDetailPage() {
 
   if (loading) {
     return (
-      <div className="animate-pulse p-4 space-y-4">
-      <div className="animate-pulse p-4 space-y-4 pt-[max(1rem,calc(env(safe-area-inset-top,0px)+1rem))]">
-        <div className="h-56 bg-market-beige rounded-3xl" />
-        <div className="h-6 bg-market-beige rounded-xl w-3/4" />
-        <div className="h-4 bg-market-beige rounded-xl w-full" />
+      <div className="min-h-screen bg-[#F7F3E8]">
+        <header className="sticky top-0 z-40 bg-[#F7F3E8] border-b border-[#E9D7B5]/60 h-[calc(3.5rem+env(safe-area-inset-top,0px))] pt-[env(safe-area-inset-top,0px)] px-5 flex items-center justify-between">
+          <div className="w-11 h-11 rounded-full bg-white border border-[#E9D7B5]/70" />
+          <div className="h-4 w-32 rounded-md skeleton-shimmer" />
+          <div className="w-11 h-11 rounded-full bg-white border border-[#E9D7B5]/70" />
+        </header>
+        <div className="detail-hero skeleton-shimmer" />
+        <div className="detail-surface space-y-4 pt-6">
+          <div className="h-6 bg-market-beige rounded-xl w-3/4 skeleton-shimmer" />
+          <div className="h-4 bg-market-beige rounded-xl w-full skeleton-shimmer" />
+        </div>
       </div>
     )
   }
@@ -123,7 +129,14 @@ export default function MenuDetailPage() {
 
   return (
     <div className="animate-fade-in pb-32">
-      <DetailHero src={product.imageUrl || '/images/food/default.jpg'} alt={product.name} backHref={`/shops/${product.shopId}`} />
+      <DetailHero
+        src={product.imageUrl || '/images/food/default.jpg'}
+        alt={product.name}
+        backHref={`/shops/${product.shopId}`}
+        title={product.name}
+        favoriteType="product"
+        favoriteId={product.id}
+      />
 
       <div className="detail-surface space-y-6">
         {/* Product Info */}
@@ -163,19 +176,17 @@ export default function MenuDetailPage() {
               {option.choices.map((choice) => (
                 <label
                   key={choice.id}
-                  className={`flex items-center justify-between p-3 rounded-2xl border cursor-pointer transition-all ${
-                    selectedChoices[option.id]?.id === choice.id
-                      ? 'border-market-orange bg-market-orange/5'
-                      : 'border-market-beige bg-card hover:border-market-brown/30'
-                  }`}
+                  className={`flex items-center justify-between p-3 rounded-2xl border cursor-pointer transition-all ${selectedChoices[option.id]?.id === choice.id
+                    ? 'border-market-orange bg-market-orange/5'
+                    : 'border-market-beige bg-card hover:border-market-brown/30'
+                    }`}
                 >
                   <div className="flex items-center gap-3">
                     <div
-                      className={`w-5 h-5 rounded-full border flex items-center justify-center transition-all ${
-                        selectedChoices[option.id]?.id === choice.id
-                          ? 'border-market-orange bg-market-orange'
-                          : 'border-market-beige'
-                      }`}
+                      className={`w-5 h-5 rounded-full border flex items-center justify-center transition-all ${selectedChoices[option.id]?.id === choice.id
+                        ? 'border-market-orange bg-market-orange'
+                        : 'border-market-beige'
+                        }`}
                     >
                       {selectedChoices[option.id]?.id === choice.id && (
                         <div className="w-2 h-2 rounded-full bg-white" />

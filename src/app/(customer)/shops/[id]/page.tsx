@@ -8,7 +8,6 @@ import { getShopRepository, getProductRepository } from '@/lib/repositories'
 import { SEED_SHOPS, SEED_PRODUCTS } from '@/repositories/adapters/local-storage/seed.data'
 import { FoodCard } from '@/components/food/FoodCard'
 import { DetailHero } from '@/components/market/DetailHero'
-import { Star, Clock, MapPin, SearchX, UtensilsCrossed } from 'lucide-react'
 import { Star, Clock, MapPin, SearchX, UtensilsCrossed, ChevronLeft } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -60,16 +59,14 @@ export default function ShopDetailPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-[#F7F3E8]">
-        <div className="relative"><div className="detail-hero skeleton-shimmer" /><Link href="/shops" aria-label="ย้อนกลับ" className="detail-float-button absolute left-5 top-4">←</Link></div>
-        <div className="sticky top-0 z-30 w-full h-[env(safe-area-inset-top,0px)] bg-[#F7F3E8]" />
-        <div className="relative">
-          <div className="detail-hero skeleton-shimmer" />
-          <nav aria-label="การนำทาง" className="detail-hero-actions">
-            <Link href="/shops" aria-label="ย้อนกลับ" className="detail-float-button">
-              <ChevronLeft size={22} strokeWidth={2} />
-            </Link>
-          </nav>
-        </div>
+        <header className="sticky top-0 z-40 bg-[#F7F3E8] border-b border-[#E9D7B5]/60 h-[calc(3.5rem+env(safe-area-inset-top,0px))] pt-[env(safe-area-inset-top,0px)] px-5 flex items-center justify-between">
+          <Link href="/shops" aria-label="ย้อนกลับ" className="flex items-center justify-center w-11 h-11 rounded-full bg-white border border-[#E9D7B5]/70 text-[#2E2318] shadow-warm-xs">
+            <ChevronLeft size={22} strokeWidth={2} />
+          </Link>
+          <div className="h-4 w-32 rounded-md skeleton-shimmer" />
+          <div className="w-11 h-11 rounded-full bg-white border border-[#E9D7B5]/70" />
+        </header>
+        <div className="detail-hero skeleton-shimmer" />
         <div className="space-y-4">
           <div className="detail-surface space-y-3">
             <div className="h-6 w-1/2 rounded-md skeleton-shimmer" />
@@ -103,7 +100,15 @@ export default function ShopDetailPage() {
 
   return (
     <div className="animate-fade-in">
-      <DetailHero src={shop.coverUrl || shop.imageUrl || '/images/food/default.jpg'} alt={shop.name} backHref="/shops" closed={!shop.isOpen} />
+      <DetailHero
+        src={shop.coverUrl || shop.imageUrl || '/images/food/default.jpg'}
+        alt={shop.name}
+        backHref="/shops"
+        closed={!shop.isOpen}
+        title={shop.name}
+        favoriteType="shop"
+        favoriteId={shop.id}
+      />
 
       {/* Shop Info */}
       <div className="detail-surface space-y-6">
@@ -111,11 +116,10 @@ export default function ShopDetailPage() {
           <div className="flex items-start justify-between gap-2">
             <h1 className="font-bold text-market-dark text-xl">{shop.name}</h1>
             <span
-              className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full flex-shrink-0 ${
-                shop.isOpen
-                  ? 'bg-emerald-50 text-emerald-700'
-                  : 'bg-rose-50 text-rose-600'
-              }`}
+              className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full flex-shrink-0 ${shop.isOpen
+                ? 'bg-emerald-50 text-emerald-700'
+                : 'bg-rose-50 text-rose-600'
+                }`}
             >
               <span className={`w-1.5 h-1.5 rounded-full ${shop.isOpen ? 'bg-emerald-500' : 'bg-rose-500'}`} />
               {shop.isOpen ? 'เปิดบริการ' : 'ปิดชั่วคราว'}
@@ -142,11 +146,10 @@ export default function ShopDetailPage() {
               <button
                 key={cat.id}
                 onClick={() => setActiveCategory(cat.id)}
-                className={`flex-shrink-0 px-4 min-h-11 rounded-full text-sm font-semibold transition-all snap-start scroll-ml-4 active:scale-95 ${
-                  activeCategory === cat.id
-                    ? 'bg-market-brown text-white shadow-warm-sm'
-                    : 'bg-white text-[#4A382A] border border-[#E9D7B5]/70 hover:bg-[#FAF7F0] active:bg-[#FAF7F0]'
-                }`}
+                className={`flex-shrink-0 px-4 min-h-11 rounded-full text-sm font-semibold transition-all snap-start scroll-ml-4 active:scale-95 ${activeCategory === cat.id
+                  ? 'bg-market-brown text-white shadow-warm-sm'
+                  : 'bg-white text-[#4A382A] border border-[#E9D7B5]/70 hover:bg-[#FAF7F0] active:bg-[#FAF7F0]'
+                  }`}
               >
                 {cat.name}
               </button>

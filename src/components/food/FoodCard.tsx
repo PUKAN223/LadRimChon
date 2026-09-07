@@ -2,6 +2,7 @@ import { Product } from '@/domain/product/product.model'
 import Link from 'next/link'
 import { Plus, Flame, Star } from 'lucide-react'
 import { ImageWithSkeleton } from '@/components/ui/image-with-skeleton'
+import { FavoriteButton } from '@/components/ui/favorite-button'
 
 const FOOD_IMAGES: Record<string, string> = {
   ชา: '/images/food/drink.jpg',
@@ -47,9 +48,9 @@ export function FoodCard({ product, onAddToCart, shopOpen = true }: FoodCardProp
       {/* Info */}
       <div className="flex-1 min-w-0 flex flex-col justify-between">
         <div>
-          {/* Badges */}
-          {(isBestseller || isPopular) && (
-            <div className="flex gap-1 mb-0.5">
+          {/* Badges & Favorite */}
+          <div className="flex items-center justify-between gap-1 mb-1 min-h-[22px]">
+            <div className="flex items-center gap-1">
               {isBestseller && (
                 <span className="inline-flex items-center gap-1 text-[9px] bg-orange-50 text-orange-600 font-bold px-1.5 py-0.5 rounded-md">
                   <Flame size={11} strokeWidth={2.4} className="fill-orange-600 text-orange-600" /> ขายดี
@@ -61,7 +62,8 @@ export function FoodCard({ product, onAddToCart, shopOpen = true }: FoodCardProp
                 </span>
               )}
             </div>
-          )}
+            <FavoriteButton type="product" id={product.id} name={product.name} variant="subtle" size={16} />
+          </div>
 
           <Link href={`/menu/${product.id}`}>
             <h3 className="font-bold text-[#2E2318] text-[14px] leading-snug group-hover:text-market-brown transition-colors line-clamp-1">
@@ -75,7 +77,7 @@ export function FoodCard({ product, onAddToCart, shopOpen = true }: FoodCardProp
 
         <div className="flex items-center justify-between mt-1.5">
           <span className="font-black text-[#A67C52] text-[15px]">฿{product.price}</span>
-          
+
           {product.isAvailable && product.stock !== 0 && shopOpen ? (
             <button
               onClick={onAddToCart}

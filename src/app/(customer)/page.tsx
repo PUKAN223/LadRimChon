@@ -14,6 +14,7 @@ import { useAppSelector, useAppDispatch } from '@/lib/hooks'
 import { setSelectedCategory, setSearchQuery } from '@/store/slices/ui.slice'
 import { useRouter } from 'next/navigation'
 import { PromoCarousel } from '@/components/home/PromoCarousel'
+import { FavoriteButton } from '@/components/ui/favorite-button'
 
 const BRAND_CATEGORIES = [
   { id: 'rice', label: 'อาหารตามสั่ง', image: '/images/category-rice-hd.png' },
@@ -258,17 +259,17 @@ export default function HomePage() {
   const filteredShops = useMemo(() => {
     const query = deferredSearchQuery.trim().toLowerCase()
     return shops.filter((s) => {
-    const matchesSearch = !query || [s.name, s.zone, String(s.shopNumber ?? ''), s.description,
-    ...s.tags, ...(shopProducts[s.id] ?? []).map((p) => p.name)]
-      .some((text) => text.toLowerCase().includes(query))
-    const matchesCategory = (() => {
-      if (!selectedCategory) return true
-      if (selectedCategory === 'rice') return s.category === 'rice' || s.category === 'noodle' || s.category === 'thai' || s.tags.some(t => t.includes('อาหาร') || t.includes('ข้าว'))
-      if (selectedCategory === 'snack') return s.category === 'snack' || s.category === 'seafood' || s.category === 'international' || s.tags.some(t => t.includes('ทานเล่น') || t.includes('ซีฟู้ด'))
-      if (selectedCategory === 'drink') return s.category === 'drink' || s.category === 'dessert' || s.tags.some(t => t.includes('เครื่องดื่ม') || t.includes('ชา'))
-      if (selectedCategory === 'dessert') return s.category === 'dessert' || s.tags.some(t => t.includes('เค้ก') || t.includes('ของหวาน') || t.includes('เบเกอรี่'))
-      return s.category === selectedCategory
-    })()
+      const matchesSearch = !query || [s.name, s.zone, String(s.shopNumber ?? ''), s.description,
+      ...s.tags, ...(shopProducts[s.id] ?? []).map((p) => p.name)]
+        .some((text) => text.toLowerCase().includes(query))
+      const matchesCategory = (() => {
+        if (!selectedCategory) return true
+        if (selectedCategory === 'rice') return s.category === 'rice' || s.category === 'noodle' || s.category === 'thai' || s.tags.some(t => t.includes('อาหาร') || t.includes('ข้าว'))
+        if (selectedCategory === 'snack') return s.category === 'snack' || s.category === 'seafood' || s.category === 'international' || s.tags.some(t => t.includes('ทานเล่น') || t.includes('ซีฟู้ด'))
+        if (selectedCategory === 'drink') return s.category === 'drink' || s.category === 'dessert' || s.tags.some(t => t.includes('เครื่องดื่ม') || t.includes('ชา'))
+        if (selectedCategory === 'dessert') return s.category === 'dessert' || s.tags.some(t => t.includes('เค้ก') || t.includes('ของหวาน') || t.includes('เบเกอรี่'))
+        return s.category === selectedCategory
+      })()
       return matchesSearch && matchesCategory
     })
   }, [deferredSearchQuery, selectedCategory, shopProducts, shops])
@@ -412,8 +413,13 @@ export default function HomePage() {
         )}
       </div>
 
+      {/* ── SEPARATOR ─────────────────────────────────────────────────── */}
+      <div className="home-inset py-1.5">
+        <div className="border-t border-market-beige/70" />
+      </div>
+
       {/* ── SWIPEABLE HERO PROMO CAROUSEL (ปัดซ้าย-ปัดขวา ใต้ Search Bar) ── */}
-      <div className="home-inset pt-3">
+      <div className="home-inset pt-1">
         <PromoCarousel />
       </div>
 
@@ -559,48 +565,55 @@ export default function HomePage() {
                     className="home-rail flex gap-3.5 overflow-x-auto pb-2 scrollbar-hide overscroll-x-contain"
                   >
                     {shops.map((shop) => (
-                      <Link
+                      <div
                         key={shop.id}
-                        href={`/shops/${shop.id}`}
-                          className="w-54 sm:w-58 shrink-0 bg-white rounded-2xl overflow-hidden border border-market-beige/60 shadow-warm-xs hover:shadow-warm-sm active:scale-[0.97] transition-all group block"
+                        className="relative w-54 sm:w-58 shrink-0 bg-white rounded-2xl overflow-hidden border border-market-beige/60 shadow-warm-xs hover:shadow-warm-sm active:scale-[0.97] transition-all group block"
                       >
-                        <div className="h-30 bg-gray-100 relative overflow-hidden">
-                          <img
-                            src={shop.coverUrl || shop.imageUrl}
-                            alt={shop.name}
-                            className="w-full h-[calc(100%+20px)] -translate-y-5   object-cover group-hover:scale-105 transition-transform duration-500"
-                            onError={(e) => {
-                              const target = e.target as HTMLImageElement
-                              target.src = '/images/stalls/krapal.webp'
-                            }}
-                          />
-                          <div className="absolute top-2 left-2">
-                            <span className="bg-market-dark/85 backdrop-blur-md text-white text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-0.5 shadow-xs">
-                              <Store size={12} strokeWidth={2.6} className="text-market-orange" />
-                              ร้านที่ {shop.shopNumber}
-                            </span>
-                          </div>
-                          <div className="absolute top-2 right-2">
-                            <span className="bg-market-dark/85 backdrop-blur-md text-amber-400 text-[10px] font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5 shadow-xs">
-                              <Star size={12} strokeWidth={2.4} className="fill-amber-400 text-amber-400" />
-                              {shop.rating}
-                            </span>
-                          </div>
+                        <div className="absolute top-2 right-2 z-10">
+                          <FavoriteButton type="shop" id={shop.id} name={shop.name} variant="floating" size={15} />
                         </div>
+                        <Link
+                          href={`/shops/${shop.id}`}
+                          className="block"
+                        >
+                          <div className="h-30 bg-gray-100 relative overflow-hidden">
+                            <img
+                              src={shop.coverUrl || shop.imageUrl}
+                              alt={shop.name}
+                              className="w-full h-[calc(100%+20px)] -translate-y-5   object-cover group-hover:scale-105 transition-transform duration-500"
+                              onError={(e) => {
+                                const target = e.target as HTMLImageElement
+                                target.src = '/images/stalls/krapal.webp'
+                              }}
+                            />
+                            <div className="absolute top-2 left-2">
+                              <span className="bg-market-dark/85 backdrop-blur-md text-white text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-0.5 shadow-xs">
+                                <Store size={12} strokeWidth={2.6} className="text-market-orange" />
+                                ร้านที่ {shop.shopNumber}
+                              </span>
+                            </div>
+                            <div className="absolute bottom-2 left-2">
+                              <span className="bg-market-dark/85 backdrop-blur-md text-amber-400 text-[10px] font-bold px-1.5 py-0.5 rounded-full flex items-center gap-0.5 shadow-xs">
+                                <Star size={12} strokeWidth={2.4} className="fill-amber-400 text-amber-400" />
+                                {shop.rating}
+                              </span>
+                            </div>
+                          </div>
 
-                        <div className="p-2.5">
-                          <h3 className="font-bold text-market-dark text-[13px] truncate group-hover:text-market-brown transition-colors">
-                            {shop.name}
-                          </h3>
-                          <div className="flex items-center gap-1.5 text-[11px] text-market-muted mt-1 font-medium">
-                            <span className="flex items-center gap-0.5">
-                              <Clock size={13} strokeWidth={2.4} /> {shop.preparationTime} นาที
-                            </span>
-                            <span>•</span>
-                            <span className="truncate">{shop.tags[0] || 'อาหารจานเดียว'}</span>
+                          <div className="p-2.5">
+                            <h3 className="font-bold text-market-dark text-[13px] truncate group-hover:text-market-brown transition-colors">
+                              {shop.name}
+                            </h3>
+                            <div className="flex items-center gap-1.5 text-[11px] text-market-muted mt-1 font-medium">
+                              <span className="flex items-center gap-0.5">
+                                <Clock size={13} strokeWidth={2.4} /> {shop.preparationTime} นาที
+                              </span>
+                              <span>•</span>
+                              <span className="truncate">{shop.tags[0] || 'อาหารจานเดียว'}</span>
+                            </div>
                           </div>
-                        </div>
-                      </Link>
+                        </Link>
+                      </div>
                     ))}
                   </div>
 
@@ -658,8 +671,11 @@ export default function HomePage() {
                     return (
                       <div
                         key={product.id}
-                        className="bg-white rounded-2xl p-2.5 border border-market-beige/60 shadow-warm-xs hover:shadow-warm-sm transition-all group flex flex-col justify-between"
+                        className="relative bg-white rounded-2xl p-2.5 border border-market-beige/60 shadow-warm-xs hover:shadow-warm-sm transition-all group flex flex-col justify-between"
                       >
+                        <div className="absolute top-3.5 right-3.5 z-10">
+                          <FavoriteButton type="product" id={product.id} name={product.name} variant="floating" size={14} />
+                        </div>
                         <Link href={`/menu/${product.id}`} className="block">
                           <div className="w-full aspect-square rounded-xl bg-gray-100 overflow-hidden relative shadow-2xs">
                             <img

@@ -1,8 +1,10 @@
-import { configureStore } from '@reduxjs/toolkit'
-import cartReducer from './slices/cart.slice'
-import orderReducer from './slices/order.slice'
-import uiReducer from './slices/ui.slice'
-import sessionReducer from './slices/session.slice'
+import { configureStore } from "@reduxjs/toolkit";
+import cartReducer from "./slices/cart.slice";
+import orderReducer from "./slices/order.slice";
+import uiReducer from "./slices/ui.slice";
+import sessionReducer from "./slices/session.slice";
+import favoritesReducer from "./slices/favorites.slice";
+import voucherReducer from "./slices/voucher.slice";
 
 export const store = configureStore({
   reducer: {
@@ -10,8 +12,10 @@ export const store = configureStore({
     order: orderReducer,
     ui: uiReducer,
     session: sessionReducer,
+    favorites: favoritesReducer,
+    voucher: voucherReducer,
   },
-})
+});
 
-export type RootState = ReturnType<typeof store.getState>
-export type AppDispatch = typeof store.dispatch
+export type RootState = ReturnType<typeof store.getState>;
+export type AppDispatch = typeof store.dispatch;

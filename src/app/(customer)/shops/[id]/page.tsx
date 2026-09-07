@@ -8,6 +8,7 @@ import { getShopRepository, getProductRepository } from '@/lib/repositories'
 import { SEED_SHOPS, SEED_PRODUCTS } from '@/repositories/adapters/local-storage/seed.data'
 import { FoodCard } from '@/components/food/FoodCard'
 import { DetailHero } from '@/components/market/DetailHero'
+import { Star, Clock, MapPin, SearchX, UtensilsCrossed } from 'lucide-react'
 import { Star, Clock, MapPin, SearchX, UtensilsCrossed, ChevronLeft } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -59,6 +60,7 @@ export default function ShopDetailPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-[#F7F3E8]">
+        <div className="relative"><div className="detail-hero skeleton-shimmer" /><Link href="/shops" aria-label="ย้อนกลับ" className="detail-float-button absolute left-5 top-4">←</Link></div>
         <div className="sticky top-0 z-30 w-full h-[env(safe-area-inset-top,0px)] bg-[#F7F3E8]" />
         <div className="relative">
           <div className="detail-hero skeleton-shimmer" />

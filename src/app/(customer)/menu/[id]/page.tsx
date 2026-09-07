@@ -98,6 +98,7 @@ export default function MenuDetailPage() {
 
   if (loading) {
     return (
+      <div className="animate-pulse p-4 space-y-4">
       <div className="animate-pulse p-4 space-y-4 pt-[max(1rem,calc(env(safe-area-inset-top,0px)+1rem))]">
         <div className="h-56 bg-market-beige rounded-3xl" />
         <div className="h-6 bg-market-beige rounded-xl w-3/4" />

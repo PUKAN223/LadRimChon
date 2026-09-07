@@ -503,6 +503,7 @@
 .detail-hero-actions {
   position: absolute;
   z-index: 20;
+  inset: calc(env(safe-area-inset-top, 0px) + 16px) 20px auto;
   inset: 16px 20px auto;
   display: flex;
   justify-content: space-between;
